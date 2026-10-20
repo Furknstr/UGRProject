@@ -1,0 +1,7 @@
+{
+  "_note": "sender domain → suggested customer_id. Derived from dataset. Domain is a HINT only — never resolves customer_id on its own.",
+  "abcshipping.example": "CUST-001",
+  "xyzlojistik.example": "CUST-002",
+  "defauto.example": "CUST-003",
+  "ghi-logistics.example": "CUST-004"
+}
