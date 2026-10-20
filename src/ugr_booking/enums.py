@@ -36,6 +36,7 @@ class SourceEmailStatus(StrEnum):
     DUPLICATE = "DUPLICATE"
     ORPHAN = "ORPHAN"
     NO_ACTION = "NO_ACTION"
+    NEEDS_REVIEW = "NEEDS_REVIEW"   # mutation rejected by security guard; operator must review
     ERROR = "ERROR"
 
 
