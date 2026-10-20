@@ -65,6 +65,7 @@ WARNING_FLAGS: frozenset[str] = frozenset({
     "QUANTITY_FROM_VIN_COUNT",
     "NUMBER_NORMALIZED",
     "UNIT_AMBIGUOUS",
+    "IMPLAUSIBLE_VALUE",      # parsed value outside configured plausible range; field set to None
     "PORT_ACCENT_NORMALIZED",
     "CONFLICTING_VALUES",
     "EMPTY_BODY",
