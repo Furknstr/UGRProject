@@ -20,3 +20,8 @@ OLLAMA_MODEL=qwen2.5:7b
 DATA_PATH=./data
 LOG_LEVEL=INFO
 ```
+
+## Bilinen Limitler
+
+> 7B model, iki düzeltme e-postasını (014, 015) yeni talep sandı. Bu iki kayıt VALIDATION_REQUIRED'a düştü, READY olmadı.
+
