@@ -93,6 +93,61 @@ def find_duplicate(session: Session, email: SourceEmail) -> SourceEmail | None:
     )
 
 
+def find_business_duplicate(
+    session: Session,
+    customer_id: str | None,
+    booking_ref: str | None,
+    vin_list: list[str],
+) -> Booking | None:
+    """Return an existing non-CANCELLED Booking that shares booking_ref or VINs.
+
+    Used as a second duplicate gate in _guard_create when content_hash differs
+    (e.g. re-sent emails with different greeting text).
+
+    Matching criteria (either is sufficient):
+    - Normalised booking_ref is the same AND the booking belongs to the same customer_id
+    - VIN sets intersect (at least one common VIN)
+
+    CANCELLED bookings are excluded: a re-booking after cancellation is legitimate.
+    Returns the *earliest* matching Booking, or None.
+    """
+    # Base query: non-CANCELLED bookings for same customer
+    base = (
+        session.query(Booking)
+        .filter(Booking.processing_status != "CANCELLED")
+    )
+
+    norm_ref = _norm_ref(booking_ref)
+
+    # 1. booking_ref match
+    if norm_ref and customer_id:
+        match = (
+            base.filter(
+                Booking.booking_ref_norm == norm_ref,
+                Booking.customer_id == customer_id,
+            )
+            .order_by(Booking.id)
+            .first()
+        )
+        if match:
+            return match
+
+    # 2. VIN intersection
+    if vin_list and customer_id:
+        candidates = (
+            base.filter(Booking.customer_id == customer_id)
+            .order_by(Booking.id)
+            .all()
+        )
+        vin_set = set(vin_list)
+        for booking in candidates:
+            existing_vins = set(booking.vin_list or [])
+            if vin_set & existing_vins:
+                return booking
+
+    return None
+
+
 def create_booking(
     session: Session,
     source_email_id: str,

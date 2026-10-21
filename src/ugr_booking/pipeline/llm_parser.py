@@ -1,4 +1,4 @@
-"""LLM parser — S4.
+"""LLM parser.
 
 Sends a preprocessed email body to Ollama and returns a validated
 :class:`~ugr_booking.models.schemas.LLMResponse`.
@@ -31,15 +31,21 @@ booking information from it.
 
 RULES:
 - Return ONLY valid JSON — no markdown, no prose, no code fences.
-- Do not invent values. If a field is not mentioned, set it to null.
+- DO NOT INVENT OR INFER VALUES. If a field is not explicitly mentioned, set it to null.
+- Extract EXACT raw strings for pol, pod, weight_raw, and dims_raw. Do not normalize them.
+- customer: Look carefully! The customer name might not be labeled "Customer:". Check the email signature, opening sentences (e.g., "GHI Global Logistics booking request"), or phrases like "Payer party", "Booking party". Extract the exact company name.
+- requested_date: 
+  1. If a date is ambiguous or a textual phrase (e.g., "SEPTEMBER SAILING", "mid October", "next available"), DO NOT set to null. Extract the exact raw phrase (so the system can flag it).
+  2. If a date is written with month names (e.g., "20 October 2026", "Oct 20th"), convert and extract it strictly as "DD/MM/YYYY" (e.g., "20/10/2026"). Otherwise, leave the date exactly as written.
+- pol & pod: Must be specific port/city names. Do not extract country names.
+- quantity: Only extract an integer if a count is explicitly stated in the text (e.g., "3 trucks", "Quantity: 2"). If the quantity is only implied by the number of VINs, set it to null.
 - For vin_list, return an empty list [] if no VINs are present.
-- requested_date must be the raw date string exactly as written (e.g. "18/10/2026").
-- weight_raw and dims_raw must be the raw strings as written (e.g. "2180 KG", "5.35 x 1.90 x 1.82 m").
-- If the email contains multiple independent bookings, include each in the
-  bookings array as a separate object.
-- message_intent must be one of:
-    CREATE_BOOKING | UPDATE_BOOKING | CANCEL_BOOKING | STATUS_INQUIRY |
-    NON_BOOKING | UNKNOWN
+- If the email contains multiple independent bookings, include each in the bookings array as a separate object.
+- message_intent MUST be one of: CREATE_BOOKING | UPDATE_BOOKING | CANCEL_BOOKING | STATUS_INQUIRY | NON_BOOKING | UNKNOWN. 
+  *CRITICAL INTENT RULES:* 
+  - A "load list" update or a message stating "not a booking request" is NON_BOOKING.
+  - A message requesting to update, change, or remove a B/L for an existing booking is UPDATE_BOOKING (not CANCEL_BOOKING).
+  - A message correcting a brand new booking request in the same email thread is still CREATE_BOOKING.
 
 JSON schema to follow exactly:
 {
@@ -49,9 +55,9 @@ JSON schema to follow exactly:
   "bookings": [
     {
       "booking_ref": "<ref or null>",
-      "customer": "<name or null>",
-      "pol": "<port or null>",
-      "pod": "<port or null>",
+      "customer": "<exact name or null>",
+      "pol": "<exact port or null>",
+      "pod": "<exact port or null>",
       "cargo_description": "<description or null>",
       "quantity": <integer or null>,
       "vin_list": ["<vin>", ...],

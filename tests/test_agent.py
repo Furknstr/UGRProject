@@ -818,3 +818,196 @@ class TestGuardSecurityChecks:
         from ugr_booking.tools.booking_ops import find_by_ref
         booking = find_by_ref(in_memory_session, "BOOKINGREF-D100")
         assert booking.processing_status == "CANCELLED"
+
+
+# ---------------------------------------------------------------------------
+# New tests for fixes
+# ---------------------------------------------------------------------------
+
+class TestSenderMismatchUnknownDomain:
+    """SENDER_CUSTOMER_MISMATCH fires when sender domain is not in domain_map."""
+
+    def test_unknown_domain_raises_sender_mismatch(self, in_memory_session):
+        """Sender from an unrecognised domain + resolved customer → SENDER_CUSTOMER_MISMATCH."""
+        from datetime import datetime
+        from ugr_booking.pipeline.validator import validate
+        from ugr_booking.pipeline.preprocessor import ParsedEmail
+        from ugr_booking.models.schemas import LLMResponse, ExtractedBooking
+
+        email = ParsedEmail(
+            email_id="EMAIL-TEST-UNKNOWNDOMAIN",
+            file_path="data/emails/fake.txt",
+            received_at=datetime(2026, 11, 1, 10, 0),
+            sender="user@unknowndomain.example",  # not in domain_map
+            flags=[],
+            body_clean="Booking request.",
+        )
+        llm_result = LLMResponse(
+            source_email_id="EMAIL-TEST-UNKNOWNDOMAIN",
+            message_intent="CREATE_BOOKING",
+            bookings=[ExtractedBooking(
+                customer="DEF Automotive",   # resolves to CUST-003
+                pol="BARCELONA", pod="JEDDAH",
+                quantity=1, vin_list=["ANONVIN0000000098"],
+                requested_date="01/12/2026",
+            )],
+        )
+        result = validate(llm_result, email)
+        flag_codes = [f.code for f in result.bookings[0].flags]
+        assert "SENDER_CUSTOMER_MISMATCH" in flag_codes
+
+
+class TestQuantityFromVINCountBothPresent:
+    """When explicit qty matches VIN count, no QUANTITY_FROM_VIN_COUNT flag is raised."""
+
+    def test_qty_equals_vin_count_no_flag(self, in_memory_session):
+        """qty==len(vin_list) → quantity_source='explicit', no QUANTITY_FROM_VIN_COUNT, status READY."""
+        from datetime import datetime
+        from ugr_booking.pipeline.validator import validate
+        from ugr_booking.pipeline.preprocessor import ParsedEmail
+        from ugr_booking.models.schemas import LLMResponse, ExtractedBooking
+
+        email = ParsedEmail(
+            email_id="EMAIL-TEST-QTYVIN",
+            file_path="data/emails/fake.txt",
+            received_at=datetime(2026, 11, 1, 10, 0),
+            sender="orders@defauto.example",
+            flags=[],
+            body_clean="Booking with explicit qty matching VINs.",
+        )
+        llm_result = LLMResponse(
+            source_email_id="EMAIL-TEST-QTYVIN",
+            message_intent="CREATE_BOOKING",
+            bookings=[ExtractedBooking(
+                customer="DEF Automotive",
+                pol="BARCELONA", pod="JEDDAH",
+                quantity=3,
+                vin_list=["ANONVIN0000000061", "ANONVIN0000000062", "ANONVIN0000000063"],
+                requested_date="01/12/2026",
+            )],
+        )
+        result = validate(llm_result, email)
+        bv = result.bookings[0]
+        flag_codes = [f.code for f in bv.flags]
+        assert "QUANTITY_FROM_VIN_COUNT" not in flag_codes
+        assert bv.quantity_source == "explicit"
+        assert bv.status == "READY"
+
+
+class TestBusinessDuplicate:
+    """find_business_duplicate catches re-sent emails with different greeting."""
+
+    def _make_email_008_response(self):
+        return LLMResponse(
+            source_email_id="EMAIL-008",
+            message_intent="CREATE_BOOKING",
+            bookings=[ExtractedBooking(
+                booking_ref="BOOKINGREF-D100",
+                customer="DEF Automotive",
+                pol="BARCELONA", pod="JEDDAH",
+                quantity=5,
+                vin_list=[
+                    "ANONVIN0000000019", "ANONVIN0000000020",
+                    "ANONVIN0000000021", "ANONVIN0000000022",
+                    "ANONVIN0000000023",
+                ],
+                weight_raw="2180 KG",
+                dims_raw="5.35 x 1.90 x 1.82 m",
+                requested_date="18/10/2026",
+            )],
+        )
+
+    def test_012_resend_is_duplicate_no_second_booking(self, in_memory_session):
+        """EMAIL-012 (resend of EMAIL-008, different greeting) → DUPLICATE, 1 Booking row only."""
+        emails = load_emails(data_path=DATA_PATH)
+        email_008 = next(e for e in emails if e.email_id == "EMAIL-008")
+        email_012 = next(e for e in emails if e.email_id == "EMAIL-012")
+
+        # Same LLM output for 012 (same booking data)
+        fake_012 = LLMResponse(
+            source_email_id="EMAIL-012",
+            message_intent="CREATE_BOOKING",
+            bookings=[ExtractedBooking(
+                booking_ref="BOOKINGREF-D100",
+                customer="DEF Automotive",
+                pol="BARCELONA", pod="JEDDAH",
+                quantity=5,
+                vin_list=[
+                    "ANONVIN0000000019", "ANONVIN0000000020",
+                    "ANONVIN0000000021", "ANONVIN0000000022",
+                    "ANONVIN0000000023",
+                ],
+                weight_raw="2180 KG",
+                dims_raw="5.35 x 1.90 x 1.82 m",
+                requested_date="18/10/2026",
+            )],
+        )
+
+        process_email(email_008, FakeLLMParser({"EMAIL-008": self._make_email_008_response()}),
+                      in_memory_session)
+        process_email(email_012, FakeLLMParser({"EMAIL-012": fake_012}), in_memory_session)
+
+        # Only one Booking row should exist
+        booking_count = in_memory_session.query(Booking).count()
+        assert booking_count == 1
+
+        # EMAIL-012 source email should be marked DUPLICATE
+        src_012 = in_memory_session.query(SourceEmail).filter_by(email_id="EMAIL-012").first()
+        assert src_012.processing_status == "DUPLICATE"
+
+    def test_cancelled_then_rebook_same_vins_not_duplicate(self, in_memory_session):
+        """After CANCEL, a new booking with same VINs is NOT treated as duplicate."""
+        emails = load_emails(data_path=DATA_PATH)
+        email_008 = next(e for e in emails if e.email_id == "EMAIL-008")
+        email_013 = next(e for e in emails if e.email_id == "EMAIL-013")
+
+        # Create then cancel
+        process_email(email_008, FakeLLMParser({"EMAIL-008": self._make_email_008_response()}),
+                      in_memory_session)
+        cancel_llm = LLMResponse(
+            source_email_id="EMAIL-013",
+            message_intent="CANCEL_BOOKING",
+            bookings=[ExtractedBooking(
+                booking_ref="BOOKINGREF-D100",
+                customer="DEF Automotive",
+                pol="BARCELONA", pod="JEDDAH",
+                quantity=5, requested_date="18/10/2026",
+            )],
+        )
+        process_email(email_013, FakeLLMParser({"EMAIL-013": cancel_llm}), in_memory_session)
+
+        # Now re-book with same VINs but a new email + new ref
+        from datetime import datetime
+        rebook_email = ParsedEmail(
+            email_id="EMAIL-REBOOK",
+            file_path="data/emails/fake.txt",
+            received_at=datetime(2026, 11, 5, 10, 0),
+            sender="export@defauto.example",
+            flags=[],
+            body_clean="Re-booking after cancellation.",
+        )
+        rebook_llm = LLMResponse(
+            source_email_id="EMAIL-REBOOK",
+            message_intent="CREATE_BOOKING",
+            bookings=[ExtractedBooking(
+                booking_ref="BOOKINGREF-D101",  # new ref
+                customer="DEF Automotive",
+                pol="BARCELONA", pod="JEDDAH",
+                quantity=5,
+                vin_list=[
+                    "ANONVIN0000000019", "ANONVIN0000000020",
+                    "ANONVIN0000000021", "ANONVIN0000000022",
+                    "ANONVIN0000000023",
+                ],
+                requested_date="15/11/2026",
+            )],
+        )
+        process_email(rebook_email, FakeLLMParser({"EMAIL-REBOOK": rebook_llm}), in_memory_session)
+
+        # Two Booking rows: original (CANCELLED) + new rebook
+        booking_count = in_memory_session.query(Booking).count()
+        assert booking_count == 2
+
+        src_rebook = in_memory_session.query(SourceEmail).filter_by(email_id="EMAIL-REBOOK").first()
+        assert src_rebook.processing_status == "BOOKING_CREATED"
+

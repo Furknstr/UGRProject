@@ -51,6 +51,7 @@ from ugr_booking.tools.booking_ops import (
     OpResult,
     cancel_booking,
     create_booking,
+    find_business_duplicate,
     find_by_ref,
     find_duplicate,
     update_booking,
@@ -85,7 +86,7 @@ def _upsert_source_email(session: Session, email: ParsedEmail) -> SourceEmail:
             body_clean=email.body_clean,
             encoding_warning=email.encoding_warning,
             suspicious_patterns=email.suspicious_patterns or None,
-            content_hash=getattr(email, "content_hash", None),
+            content_hash=email.body_fingerprint,
             processing_status=SourceEmailStatus.RECEIVED,
         )
         session.add(row)
@@ -130,7 +131,7 @@ def _guard_create(
     raw_json = llm_result.model_dump_json()
 
     for bv in validation.bookings:
-        # --- Duplicate detection (fingerprint / content hash) ---
+        # --- Duplicate detection: 1) content hash (exact) ---
         dup_src = find_duplicate(session, src)
         if dup_src is not None:
             _log(session, email.email_id, "guard", "skipped",
@@ -145,7 +146,24 @@ def _guard_create(
             src.duplicate_of = dup_src.email_id
             return  # skip all splits for this email
 
-        # --- Create (or idempotent skip) ---
+        # --- Duplicate detection: 2) business-level (booking_ref or VIN overlap) ---
+        biz_dup = find_business_duplicate(session, bv.customer_id, bv.booking_ref, bv.vin_list)
+        if biz_dup is not None:
+            _log(session, email.email_id, "guard", "skipped",
+                 message="POSSIBLE_DUPLICATE",
+                 detail={
+                     "proposed_action": "no_action",
+                     "guard_decision": "POSSIBLE_DUPLICATE",
+                     "reason": f"booking_ref or VIN overlap with booking_id={biz_dup.id} "
+                               f"(email {biz_dup.source_email_id})",
+                     "split_index": bv.split_index,
+                     "matched_booking_id": biz_dup.id,
+                     "matched_email_id": biz_dup.source_email_id,
+                 })
+            src.processing_status = SourceEmailStatus.DUPLICATE
+            src.duplicate_of = biz_dup.source_email_id
+            return  # skip all splits for this email
+
         result: OpResult = create_booking(session, email.email_id, bv, raw_json)
 
         guard_decision = "READY" if bv.status == "READY" else "VALIDATION_REQUIRED"

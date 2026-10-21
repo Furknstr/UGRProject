@@ -505,9 +505,10 @@ def _rule_quantity(
 ) -> list[ValidationFlag]:
     """Cross-check VIN count against explicit quantity.
 
-    QUANTITY_FROM_VIN_COUNT is only emitted when quantity is *inferred*
-    from the VIN list (no explicit quantity was given).  When both are
-    consistent, quantity_source stays "explicit" with no extra warning.
+    QUANTITY_FROM_VIN_COUNT is emitted only when quantity is *inferred*
+    from the VIN list (no explicit quantity given).
+    VIN_QUANTITY_MISMATCH is emitted when explicit qty and VIN count differ.
+    When explicit qty matches VIN count, no flag is emitted.
     """
     flags: list[ValidationFlag] = []
     vin_count = len(bv.vin_list)
@@ -524,6 +525,7 @@ def _rule_quantity(
         flags.append(_flag("QUANTITY_FROM_VIN_COUNT", field="quantity",
                            raw=str(vin_count)))
     else:
+        # explicit qty provided (with or without VINs) — accept as-is, no flag
         bv.quantity = explicit_qty
         bv.quantity_source = "explicit" if explicit_qty is not None else None
 
@@ -612,11 +614,21 @@ def _rule_sender_mismatch(
     bv: BookingValidation,
     email: ParsedEmail,
 ) -> list[ValidationFlag]:
-    """SENDER_CUSTOMER_MISMATCH: resolved customer ≠ domain-suggested customer."""
+    """SENDER_CUSTOMER_MISMATCH: resolved customer ≠ domain-suggested customer.
+
+    Fires when:
+    - Domain is known and maps to a *different* customer than resolved, OR
+    - Domain is *unknown* (not in domain_map) — unrecognised sender for a
+      resolved customer is treated as a mismatch signal.
+    Does not fire when customer_id is None (already flagged as UNKNOWN_CUSTOMER)
+    or when sender is absent (already flagged as MISSING_SENDER).
+    """
     if bv.customer_id is None or not email.sender:
         return []
     suggestion = suggest_customer_from_domain(email.sender)
-    if suggestion is not None and suggestion != bv.customer_id:
+    # suggestion is None  → domain not in domain_map → unrecognised sender
+    # suggestion differs  → domain maps to a different customer
+    if suggestion is None or suggestion != bv.customer_id:
         return [_flag("SENDER_CUSTOMER_MISMATCH", field="customer_id",
                       raw=email.sender, suggestion=suggestion)]
     return []

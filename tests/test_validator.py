@@ -833,6 +833,7 @@ class TestQuantityFromVinCount:
         assert bv.quantity == 3
         assert bv.quantity_source == "explicit"
         assert "QUANTITY_FROM_VIN_COUNT" not in bv.warning_flags
+        assert bv.status == "READY"
 
     def test_no_explicit_qty_inferred_from_vins(self):
         """qty=None with 2 VINs → inferred, QUANTITY_FROM_VIN_COUNT emitted."""
