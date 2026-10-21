@@ -1,61 +1,61 @@
 # UGR Booking AI
 
-AI destekli e-posta rezervasyon (booking) ayrıştırma, doğrulama ve sorgulama boru hattı.
+AI-powered email booking parsing, validation, and query pipeline.
 
-> **Temel ilke:** *LLM okur ve önerir, Python karar verir.* Model veritabanına doğrudan yazamaz; her değişiklik doğrulama kuralları ve bir "guard" katmanından geçer.
+> **Core Principle:** *The LLM reads and proposes, Python decides.* The model cannot write directly to the database; every change passes through validation rules and a "guard" layer.
 
-## Mimari
+## Architecture
 
 ```mermaid
 flowchart TB
-    subgraph Katman1 ["1. Veri İşleme ve Doğrulama (Satır 1)"]
+    subgraph Layer1 ["1. Data Processing and Validation (Row 1)"]
         direction LR
-        A["data/emails/*.txt"] --> B["Preprocessor<br/>alıntı/HTML temizliği, risk bayrakları, hash"]
-        B --> C["LLM Parser<br/>Ollama qwen2.5:7b, yapılandırılmış JSON"]
-        C --> D["Validator<br/>master data, tarih/sayı normalizasyonu, iş kuralları"]
+        A["data/emails/*.txt"] --> B["Preprocessor<br/>quote/HTML stripping, risk flags, hash deduplication"]
+        B --> C["LLM Parser<br/>Ollama qwen2.5:7b, structured JSON"]
+        C --> D["Validator<br/>master data, date/number normalization, business rules"]
         D --> E{"Guard<br/>agent.py"}
     end
 
-    subgraph Katman2 ["2. Depolama ve Arayüz (Satır 2)"]
+    subgraph Layer2 ["2. Storage and Interface (Row 2)"]
         direction LR
-        F[("SQLite<br/>source_emails · bookings<br/>booking_events · processing_log")] --> H["db/repository.py<br/>ortak sorgu katmanı"]
+        F[("SQLite<br/>source_emails · bookings<br/>booking_events · processing_log")] --> H["db/repository.py<br/>shared query layer"]
         H --> I["Streamlit Dashboard"]
         H --> J["Chatbot<br/>chat_router.py"]
-        J -->|filtre senkronu| I
+        J -->|filter sync| I
     end
 
-    %% Alt satıra geçiş bağlantıları
-    E -->|güvenli| F
-    E -->|reddedildi| G["NEEDS_REVIEW / VALIDATION_REQUIRED"]
+    %% Connections to the second row
+    E -->|safe| F
+    E -->|rejected| G["NEEDS_REVIEW / VALIDATION_REQUIRED"]
     G --> F
 ```
 
-| Katman | Dosya | Sorumluluk |
+| Layer | File | Responsibility |
 |---|---|---|
-| Ön işleme | `pipeline/preprocessor.py` | Başlık ayrıştırma, kronolojik sıra, alıntı/HTML temizliği, enjeksiyon örüntüsü, ek referansı, hash kopya |
-| LLM | `pipeline/llm_parser.py` | Ollama ile yapılandırılmış çıkarım (`FakeLLMParser` testler için) |
-| Doğrulama | `pipeline/validator.py`, `normalize.py`, `master_data.py` | Müşteri/liman çözümleme, tarih/sayı normalizasyonu, bloklayan ve uyarı bayrakları, durum kararı |
-| Guard + araçlar | `pipeline/agent.py`, `tools/booking_ops.py` | `create/update/cancel_booking`; model önerisi guard'dan geçmeden yazılmaz, her karar `processing_log`'a düşer |
-| Depolama | `models/orm.py`, `db/connection.py` | 4 tablo, her booking `source_email_id` ile kaynağına bağlı |
-| Sorgu katmanı | `db/repository.py` | Dashboard ve chatbot **aynı** fonksiyonları çağırır, sayılar tutarlıdır |
-| Arayüz | `ui/app.py`, `ui/chat_router.py`, `app.py` | KPI, filtreler, tablo, İnceleme Kuyruğu, grafikler, chatbot |
+| Preprocessing | `pipeline/preprocessor.py` | Header parsing, chronological ordering, quote/HTML stripping, injection patterns, attachment references, hash deduplication |
+| LLM | `pipeline/llm_parser.py` | Structured extraction with Ollama (`FakeLLMParser` for tests) |
+| Validation | `pipeline/validator.py`, `normalize.py`, `master_data.py` | Customer/port resolution, date/number normalization, blocking and warning flags, status determination |
+| Guard + Tools | `pipeline/agent.py`, `tools/booking_ops.py` | `create/update/cancel_booking`; model proposals are not written without passing the guard, every decision is logged in `processing_log` |
+| Storage | `models/orm.py`, `db/connection.py` | 4 tables, each booking is linked to its source via `source_email_id` |
+| Query Layer | `db/repository.py` | Dashboard and chatbot call the **same** functions, ensuring consistent numbers |
+| Interface | `ui/app.py`, `ui/chat_router.py`, `app.py` | KPIs, filters, data table, Review Queue, charts, chatbot |
 
-## Kurulum
+## Installation
 
 ```bash
-# Sanal ortamı kur ve bağımlılıkları senkronize et (varsayılan: SQLite)
+# Set up virtual environment and sync dependencies (default: SQLite)
 uv sync --extra dev
 
-# (Opsiyonel) İleride PostgreSQL ile çalıştırmak isterseniz:
+# (Optional) If you want to run with PostgreSQL in the future:
 # uv sync --extra dev --extra postgres
 
-# Modeli indir (Ollama sunucusu çalışıyor olmalı)
+# Pull the model (Ollama server must be running)
 ollama pull qwen2.5:7b
 ```
 
-## Yapılandırma
+## Configuration
 
-`.env` dosyasını `.env.example` üzerinden düzenleyebilirsiniz:
+You can configure the `.env` file based on `.env.example`:
 
 ```env
 DATABASE_URL=sqlite:///./ugr_booking.db
@@ -65,77 +65,77 @@ DATA_PATH=./data
 LOG_LEVEL=INFO
 ```
 
-### Veri paketi
+### Data Package
 
-Case veri seti gizli olduğu için repoda **yoktur** (`data/` git-ignored). `DATA_PATH` altında şu yapı beklenir:
+Since the case dataset is confidential, it is **not included** in the repository (`data/` is git-ignored). The following structure is expected under `DATA_PATH`:
 
 ```text
 data/
 ├── emails/            # EMAIL-001.txt ... EMAIL-034.txt
-├── manifest.json      # e-posta sırası / received_at
+├── manifest.json      # email sequence / received_at
 └── master_data/       # customers.json, ports.json, booking_schema.json
 ```
 
-Sunum/test için beklenen sonuçlar `plan/expected_outcomes.json` (golden set) dosyasındadır; o da git-ignored'dır.
+For presentation/testing purposes, the expected results are in `plan/expected_outcomes.json` (golden set); this file is also git-ignored.
 
-## Çalıştırma
+## Running
 
 ```bash
-# 1) E-postaları işle (gerçek Ollama)
+# 1) Process emails (real Ollama)
 uv run python scripts/run_pipeline.py
 
-#    Kaydedilmiş LLM yanıtlarını yeniden kullan (Ollama gerekmez)
+#    Reuse saved LLM responses (Ollama not required)
 uv run python scripts/run_pipeline.py --reuse-llm-cache
-#    İlk gerçek koşuda yanıtları cache'e yaz
+#    Save responses to cache on the first real run
 uv run python scripts/run_pipeline.py --reuse-llm-cache --write-cache
 
-# 2) Sonucu golden set ile karşılaştır
+# 2) Compare results with the golden set
 uv run python scripts/eval_real_llm.py --output docs/eval_results.md
 
 # 3) Dashboard + chatbot
 uv run streamlit run app.py
 ```
 
-Chatbot, Ollama erişilemezse veya yönlendirme geçersiz dönerse regex tabanlı yedek yönlendiriciye düşer; case'in 4 örnek sorusu bu durumda da çalışır.
+If Ollama is unreachable or routing returns an invalid result, the chatbot falls back to a regex-based fallback router; the 4 sample questions of the case study work under this fallback as well.
 
-## Testler
+## Testing
 
 ```bash
 uv run pytest
 ```
 
-- Birim testleri: normalizasyon, ön işleme, doğrulama, guard/araçlar, repository, chat router.
-- `tests/test_pipeline_e2e.py`: 34 e-postayı geçici bir DB'ye işler ve **yanlış READY olmadığını** doğrular. Gizli veri veya LLM cache yoksa atlanır.
-  Golden set ile tam eşleşme kontrolleri taze bir cache ister: `E2E_STRICT_GOLDEN=1 uv run pytest tests/test_pipeline_e2e.py`.
+- Unit tests: normalization, preprocessing, validation, guard/tools, repository, chat router.
+- `tests/test_pipeline_e2e.py`: Processes 34 emails into a temporary DB and verifies that **no false READY status occurs**. Skipped if confidential data or LLM cache is missing.
+  Full match checks against the golden set require a fresh cache: `E2E_STRICT_GOLDEN=1 uv run pytest tests/test_pipeline_e2e.py`.
 
-## Varsayımlar
+## Assumptions
 
-- Müşteri ve liman eşleştirme yalnızca master data üzerinden, tam (fold edilmiş) eşleşmeyle yapılır; bulanık eşleştirme yoktur. Gönderen alan adı müşteriyi tek başına çözmez, yalnızca ipucudur.
-- Emin olunmayan değer tahmin edilmez; alan boş bırakılır ve `VALIDATION_REQUIRED` olarak işaretlenir.
-- Toplam booking sayısı yalnızca `bookings` tablosunu sayar (yetim, durum sorgusu ve rezervasyon-dışı e-postalar dahil değildir).
-- Chatbot sayıları şablonla üretilir; LLM sayı yazmaz. Kayıtta olmayan bilgi için sabit yanıt döner: *"Bu bilgi mevcut kayıtlarda bulunmuyor."*
+- Customer and port matching is performed strictly against master data using exact (case/accent-folded) matching; there is no fuzzy matching. The sender domain alone does not resolve the customer; it is only a hint.
+- Uncertain values are never guessed; fields are left empty and marked as `VALIDATION_REQUIRED`.
+- Total booking count counts only the `bookings` table (orphans, status inquiries, and non-booking emails are excluded).
+- Chatbot figures are template-generated; the LLM does not generate numbers directly. For information not present in the records, a fixed response is returned: *"Bu bilgi mevcut kayıtlarda bulunmuyor."* (This information is not found in existing records).
 
-## Bilinen Limitler ve Eksiklikler
+## Known Limitations and Gaps
 
-Aşağıdaki tablo, sistemin mevcut sınırlarını, nedenlerini ve sonraki aşamadaki olası çözümlerini özetlemektedir:
+The table below summarizes the system's current limitations, root causes, and potential next-phase solutions:
 
-| Eksiklik / Sınır | Kök Neden | Olası Çözüm | Örnek Senaryo |
+| Limitation / Gap | Root Cause | Potential Solution | Example Scenario |
 |---|---|---|---|
-| **Düzeltme E-postasını Güncelleme Olarak Yakalayamamak** (014, 015) | 7B model konuşma bağlamını kaçırdı; düzeltmeyi yeni talep sandı. | Few-shot prompting veya daha güçlü bir model (GPT-4o/Claude) kullanımı. | *"Correction: please update date to 15.10.2026"* |
-| **Yetim Güncellemeleri Bulanık (Fuzzy) Eşleştirememek** (003, 007) | Sistem yalnızca tam referans eşleşmesi arar; bulamayınca kaydı doğrudan `ORPHAN` yapar. | Müşteri ve tarih penceresi üzerinden aday kaydı puanlayan Fuzzy Matcher ile operatör önerisi sunmak. | *"Lütfen dünkü rezervasyonumuzun yükleme tarihini değiştirin"* |
-| **Ek Dosyaların İçeriğini Okuyamamak** (029) | Sistemde bir OCR veya PDF/Excel ayrıştırıcı boru hattı (pipeline) yok. | Boru hattının başına `pypdf`, OCR veya multimodal LLM eklenerek ekleri metne dökmek. | *"Please find attached our booking request and VIN list"* |
-| **Bilinmeyen Domainden Gelen Gerçek Müşteriler** | Gönderici/müşteri uyuşmazlığı kuralı (`SENDER_CUSTOMER_MISMATCH`) doğrudan şüpheli sayar. | Kişisel e-postaları iletişim listesine eklemek veya şirket domainine doğrulama kodu göndermek. | Kayıtlı ABC Shipping yetkilisinin kişisel/farklı bir adresten talep atması. |
+| **Failing to Capture Correction Emails as Updates** (014, 015) | The 7B model missed conversational context, treating the correction as a new booking request. | Few-shot prompting or using a more capable model (GPT-4o/Claude). | *"Correction: please update date to 15.10.2026"* |
+| **Lack of Fuzzy Matching for Orphan Updates** (003, 007) | The system only looks for exact reference matches; when none is found, it marks the record directly as `ORPHAN`. | Introduce a Fuzzy Matcher scoring candidate records by customer and date window to offer suggestions to the operator. | *"Please change the loading date for yesterday's booking"* |
+| **Inability to Read Attachment Contents** (029) | The system lacks an OCR or PDF/Excel parsing pipeline. | Prepend `pypdf`, OCR, or a multimodal LLM to the pipeline to extract attachment text. | *"Please find attached our booking request and VIN list"* |
+| **Legitimate Customers from Unknown Domains** | The sender/customer mismatch rule (`SENDER_CUSTOMER_MISMATCH`) immediately flags the request as suspicious. | Add personal email addresses to an allowed contact list or send a verification code to the corporate domain. | An authorized ABC Shipping contact submitting a request from a personal or alternative address. |
 
-> **Güvenlik Notu:** Bu 4 sınırın tamamı sistemin güvenlik zırhı sayesindedir; model/veri yetersiz kaldığında hiçbir hatalı kayıt `READY` yapılmaz, doğrudan `VALIDATION_REQUIRED` veya `ORPHAN` karantinasına alınır.
+> **Security Note:** All 4 of these limitations stem from the system's safety-first design; when the model or data is insufficient, no erroneous record is ever marked as `READY`, but is quarantined directly as `VALIDATION_REQUIRED` or `ORPHAN`.
 
-- **Golden set uyumu:** 34 e-postanın 14'ü golden set ile tam eşleşiyor. Sapmaların çoğu uyarı bayraklarında (ör. `QUANTITY_FROM_VIN_COUNT`) ve model kaynaklı alan farklarında; ayrıntı için `docs/eval_results.md`. Güvenlik özelliği ölçüldü: beklenen 9 READY kayıt dışında hiçbir kayıt READY değil.
-- **Güncelleme/iptal testleri sentetiktir:** Veri setinde yalnızca 013 gerçek bir kaydı (D100) bulur; diğer akışlar sentetik create→update/cancel testleriyle doğrulanır.
-- **Canlı posta kutusu, kimlik doğrulama ve bulut dağıtımı kapsam dışıdır.**
+- **Golden set alignment:** 14 out of 34 emails match the golden set completely. Most deviations stem from warning flags (e.g., `QUANTITY_FROM_VIN_COUNT`) and model-induced field variations; see `docs/eval_results.md` for details. The safety guarantee was validated: outside of the 9 expected READY records, no record was marked READY.
+- **Update/cancellation tests are synthetic:** In the dataset, only 013 references a real record (D100); all other flows are validated with synthetic create→update/cancel tests.
+- **Live mailboxes, user authentication, and cloud deployment are out of scope.**
 
-## Üretime Geçmeden Önce Yapılacaklar
+## Pre-Production Roadmap
 
-1. **Veritabanı Göçü (Migration):** PostgreSQL + Alembic entegrasyonu.
-2. **Operatör Arayüzü:** `NEEDS_REVIEW` durumundaki kayıtlar için insan onay ve düzenleme ekranı.
-3. **Ek Dosya Pipeline'ı:** OCR ve `pypdf` / multimodal LLM desteği ile PDF/Excel içeriklerinin ayrıştırılması.
-4. **Gelişmiş Eşleştirme:** Yetim güncellemeler için kural tabanlı Fuzzy Matcher entegrasyonu.
-5. **Gözlemlenebilirlik (Observability):** Yapılandırılmış loglama (Structured Logging) ve metrik takibi.
+1. **Database Migration:** PostgreSQL + Alembic integration.
+2. **Operator Interface:** Human review and editing interface for records in `NEEDS_REVIEW` status.
+3. **Attachment Pipeline:** Parsing PDF/Excel attachments via OCR and `pypdf` / multimodal LLM support.
+4. **Advanced Matching:** Rule-based Fuzzy Matcher integration for orphan updates.
+5. **Observability:** Structured logging and metric monitoring.
