@@ -34,8 +34,11 @@ flowchart LR
 ## Kurulum
 
 ```bash
-# Sanal ortamı kur ve bağımlılıkları senkronize et
-uv sync --extra dev --extra postgres
+# Sanal ortamı kur ve bağımlılıkları senkronize et (varsayılan: SQLite)
+uv sync --extra dev
+
+# (Opsiyonel) İleride PostgreSQL ile çalıştırmak isterseniz:
+# uv sync --extra dev --extra postgres
 
 # Modeli indir (Ollama sunucusu çalışıyor olmalı)
 ollama pull qwen2.5:7b
