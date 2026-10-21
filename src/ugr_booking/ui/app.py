@@ -129,8 +129,8 @@ def main():
             {
                 "role": "assistant",
                 "content": (
-                    "Merhaba! Ben UGR Rezervasyon Operasyon Asistanıyım. "
-                    "Rezervasyonlar, müşteriler, limanlar veya doğrulama bekleyen kayıtlar hakkında soru sorabilirsiniz."
+                    "Hello! I am the UGR Booking Operations Assistant. "
+                    "You can ask me questions about bookings, customers, ports, or records requiring validation."
                 ),
             }
         ]
@@ -142,10 +142,10 @@ def main():
     header_col1, header_col2 = st.columns([4, 1])
     with header_col1:
         st.title("🚢 UGR Lines — AI Booking Intake Assistant")
-        st.caption("Kontrollü AI Boru Hattı, Güvenli Doğrulama ve Operasyonel Takip Paneli")
+        st.caption("Controlled AI Pipeline, Secure Validation & Operations Dashboard")
     with header_col2:
         st.write("")
-        if st.button("🔄 Verileri Yenile", width="stretch"):
+        if st.button("🔄 Refresh Data", width="stretch"):
             st.rerun()
 
     # ---------------------------------------------------------------------------
@@ -153,15 +153,15 @@ def main():
     # ---------------------------------------------------------------------------
 
     with st.sidebar:
-        st.header("🔍 Operasyonel Filtreler")
+        st.header("🔍 Operational Filters")
 
         # Customer options
         customers = list_known_customers()
         cust_options = ["ALL"] + [c["customer_id"] for c in customers]
-        cust_format = lambda x: "Tümü (All Customers)" if x == "ALL" else get_customer_display_name(x)
+        cust_format = lambda x: "All Customers" if x == "ALL" else get_customer_display_name(x)
 
         st.selectbox(
-            "Müşteri",
+            "Customer",
             options=cust_options,
             format_func=cust_format,
             key="filter_customer",
@@ -170,13 +170,13 @@ def main():
         # Status options
         status_options = ["ALL", "READY", "VALIDATION_REQUIRED", "CANCELLED"]
         status_format = {
-            "ALL": "Tümü (All Statuses)",
-            "READY": "✅ READY (Hazır)",
-            "VALIDATION_REQUIRED": "⚠️ VALIDATION_REQUIRED (İnceleme)",
-            "CANCELLED": "❌ CANCELLED (İptal)",
+            "ALL": "All Statuses",
+            "READY": "✅ READY (Approved)",
+            "VALIDATION_REQUIRED": "⚠️ VALIDATION_REQUIRED (Pending)",
+            "CANCELLED": "❌ CANCELLED",
         }
         st.selectbox(
-            "İşlem Durumu",
+            "Processing Status",
             options=status_options,
             format_func=lambda x: status_format.get(x, x),
             key="filter_status",
@@ -185,35 +185,25 @@ def main():
         # Ports
         ports = list_known_ports()
         port_codes = ["ALL"] + sorted([p["port_code"] for p in ports])
-        port_format = lambda x: "Tümü (All Ports)" if x == "ALL" else get_port_display_name(x)
+        port_format = lambda x: "All Ports" if x == "ALL" else get_port_display_name(x)
 
         st.selectbox(
-            "Çıkış Limanı (POL)",
+            "Port of Loading (POL)",
             options=port_codes,
             format_func=port_format,
             key="filter_pol",
         )
 
         st.selectbox(
-            "Varış Limanı (POD)",
+            "Port of Discharge (POD)",
             options=port_codes,
             format_func=port_format,
             key="filter_pod",
         )
 
         st.write("")
-        if st.button("Filtreleri Sıfırla", on_click=reset_filters, width="stretch"):
+        if st.button("Reset Filters", on_click=reset_filters, width="stretch"):
             st.rerun()
-
-        st.divider()
-        st.markdown(
-            """
-            **Sistem Kuralları:**
-            - **Guard:** Model asla doğrudan DB yazamaz.
-            - **Doğrulama:** Eksik/şüpheli kayıtlar `VALIDATION_REQUIRED` olur.
-            - **İzlenebilirlik:** Her rezervasyon orijinal e-postasına bağlıdır.
-            """
-        )
 
     # ---------------------------------------------------------------------------
     # Global Metrics (KPI Cards)
@@ -223,15 +213,15 @@ def main():
 
     kpi1, kpi2, kpi3, kpi4, kpi5 = st.columns(5)
     with kpi1:
-        st.metric("Toplam Rezervasyon", stats["total_bookings"], help="Yalnızca doğrulanmış rezervasyon satırları")
+        st.metric("Total Bookings", stats["total_bookings"], help="Legitimate booking records in database")
     with kpi2:
-        st.metric("READY (Hazır)", stats["ready_count"], delta=f"{stats['ready_count']} hazır", delta_color="normal")
+        st.metric("READY", stats["ready_count"], delta=f"{stats['ready_count']} ready", delta_color="normal")
     with kpi3:
-        st.metric("VALIDATION REQUIRED", stats["validation_required_count"], delta=f"{stats['validation_required_count']} inceleme", delta_color="inverse")
+        st.metric("VALIDATION REQUIRED", stats["validation_required_count"], delta=f"{stats['validation_required_count']} pending", delta_color="inverse")
     with kpi4:
-        st.metric("CANCELLED", stats["cancelled_count"], delta=f"{stats['cancelled_count']} iptal", delta_color="off")
+        st.metric("CANCELLED", stats["cancelled_count"], delta=f"{stats['cancelled_count']} cancelled", delta_color="off")
     with kpi5:
-        st.metric("İnceleme Kuyruğu", stats["review_queue_total"], help="Yetim, kopya veya şüpheli e-postalar", delta=f"{stats['orphan_count']} yetim", delta_color="inverse")
+        st.metric("Review Queue", stats["review_queue_total"], help="Orphan, duplicate or suspicious emails", delta=f"{stats['orphan_count']} orphans", delta_color="inverse")
 
     st.write("")
 
@@ -240,7 +230,7 @@ def main():
     # ---------------------------------------------------------------------------
 
     tab_bookings, tab_review, tab_charts, tab_chat = st.tabs(
-        ["📋 Rezervasyon Listesi", "🚨 İnceleme Kuyruğu", "📊 Operasyonel Grafikler", "💬 Operasyonel Chatbot"]
+        ["📋 Bookings Explorer", "🚨 Review Queue", "📊 Operational Analytics", "💬 Operations Assistant"]
     )
 
     # ---------------------------------------------------------------------------
@@ -256,10 +246,10 @@ def main():
             status=st.session_state["filter_status"],
         )
 
-        st.subheader(f"Rezervasyonlar ({len(filtered_list)} kayıt gösteriliyor)")
+        st.subheader(f"Bookings ({len(filtered_list)} records displayed)")
 
         if not filtered_list:
-            st.info("Seçili filtrelere uygun rezervasyon kaydı bulunamadı.")
+            st.info("No booking records match the selected filters.")
         else:
             # Build DataFrame for table view
             table_rows = []
@@ -267,14 +257,14 @@ def main():
                 table_rows.append({
                     "ID": b.id,
                     "Ref": b.booking_ref or f"BKG-{b.id:04d}",
-                    "Müşteri": get_customer_display_name(b.customer_id),
-                    "POL": b.pol or "⚠️ Eksik",
-                    "POD": b.pod or "⚠️ Eksik",
-                    "Miktar": b.quantity or 0,
-                    "Tarih": b.requested_date or "⚠️ Belirtilmemiş",
-                    "Durum": b.processing_status,
-                    "Kaynak E-posta": b.source_email_id,
-                    "Bayrak Sayısı": len(b.validation_flags or []),
+                    "Customer": get_customer_display_name(b.customer_id),
+                    "POL": b.pol or "⚠️ Missing",
+                    "POD": b.pod or "⚠️ Missing",
+                    "Quantity": b.quantity or 0,
+                    "Requested Date": b.requested_date or "⚠️ Unspecified",
+                    "Status": b.processing_status,
+                    "Source Email": b.source_email_id,
+                    "Flags": len(b.validation_flags or []),
                 })
             df_bookings = pd.DataFrame(table_rows)
 
@@ -284,9 +274,9 @@ def main():
                 width="stretch",
                 hide_index=True,
                 column_config={
-                    "Durum": st.column_config.TextColumn(
-                        "Durum",
-                        help="İşlem durumu",
+                    "Status": st.column_config.TextColumn(
+                        "Status",
+                        help="Processing status",
                     ),
                 },
             )
@@ -294,21 +284,21 @@ def main():
             st.divider()
 
             # Detailed Booking Inspector with safe formatting (no key to prevent state conflict)
-            st.subheader("🔍 Rezervasyon Detay İnceleyicisi")
+            st.subheader("🔍 Booking Details Inspector")
 
             booking_map = {b.id: b for b in filtered_list}
             options_ids = list(booking_map.keys())
 
             def _format_booking_label(bid: int) -> str:
-                b = booking_map.get(bid)
-                if not b:
-                    return f"ID: {bid}"
-                ref = b.booking_ref or f"BKG-{b.id:04d}"
-                cust = get_customer_display_name(b.customer_id)
-                return f"ID: {bid} | Ref: {ref} | Müşteri: {cust}"
+               b = booking_map.get(bid)
+               if not b:
+                   return f"ID: {bid}"
+               ref = b.booking_ref or f"BKG-{b.id:04d}"
+               cust = get_customer_display_name(b.customer_id)
+               return f"ID: {bid} | Ref: {ref} | Customer: {cust}"
 
             selected_id = st.selectbox(
-                "İncelemek için rezervasyon seçin:",
+                "Select a booking to inspect:",
                 options=options_ids,
                 format_func=_format_booking_label,
             )
@@ -317,96 +307,97 @@ def main():
             if curr_b:
                 dcol1, dcol2, dcol3 = st.columns([1, 1, 1])
                 with dcol1:
-                    st.markdown("**Temel Bilgiler**")
+                    st.markdown("**Core Information**")
                     st.write(f"- **Booking Ref:** `{curr_b.booking_ref}`")
-                    st.write(f"- **Müşteri (Çözülen):** {get_customer_display_name(curr_b.customer_id)}")
-                    st.write(f"- **Müşteri (Ham Metin):** `{curr_b.customer_raw}`")
-                    st.write(f"- **Yük Açıklaması:** {curr_b.cargo_description or '-'}")
-                    st.write(f"- **Miktar:** {curr_b.quantity} (Kaynak: {curr_b.quantity_source or 'explicit'})")
+                    st.write(f"- **Customer (Resolved):** {get_customer_display_name(curr_b.customer_id)}")
+                    st.write(f"- **Customer (Raw Text):** `{curr_b.customer_raw}`")
+                    st.write(f"- **Cargo Description:** {curr_b.cargo_description or '-'}")
+                    st.write(f"- **Quantity:** {curr_b.quantity} (Source: {curr_b.quantity_source or 'explicit'})")
                 with dcol2:
-                    st.markdown("**Lojistik ve Boyutlar**")
-                    st.write(f"- **POL:** {get_port_display_name(curr_b.pol)} (Ham: `{curr_b.pol_raw}`)")
-                    st.write(f"- **POD:** {get_port_display_name(curr_b.pod)} (Ham: `{curr_b.pod_raw}`)")
-                    st.write(f"- **Talep Tarihi:** `{curr_b.requested_date}` (Ham: `{curr_b.requested_date_raw}`)")
-                    st.write(f"- **Ağırlık:** {curr_b.weight_kg_per_unit} kg (Ham: `{curr_b.weight_raw}`)")
-                    st.write(f"- **Boyutlar (U/G/Y):** {curr_b.length_m} x {curr_b.width_m} x {curr_b.height_m} m")
+                    st.markdown("**Logistics & Dimensions**")
+                    st.write(f"- **POL:** {get_port_display_name(curr_b.pol)} (Raw: `{curr_b.pol_raw}`)")
+                    st.write(f"- **POD:** {get_port_display_name(curr_b.pod)} (Raw: `{curr_b.pod_raw}`)")
+                    st.write(f"- **Requested Date:** `{curr_b.requested_date}` (Raw: `{curr_b.requested_date_raw}`)")
+                    st.write(f"- **Unit Weight:** {curr_b.weight_kg_per_unit} kg (Raw: `{curr_b.weight_raw}`)")
+                    st.write(f"- **Dimensions (L/W/H):** {curr_b.length_m} x {curr_b.width_m} x {curr_b.height_m} m")
                 with dcol3:
-                    st.markdown("**İşlem Durumu & Kaynak**")
-                    st.write(f"- **Durum:** `{curr_b.processing_status}`")
-                    st.write(f"- **Gemi / Sefer:** {curr_b.vessel or '-'} / {curr_b.voyage or '-'}")
-                    st.write(f"- **İletişim:** {curr_b.contact_name or '-'} ({curr_b.contact_email or '-'})")
-                    st.write(f"- **Kaynak E-posta ID:** `{curr_b.source_email_id}`")
-                    st.write(f"- **Kayıt Tarihi:** {curr_b.created_at}")
+                    st.markdown("**Status & Provenance**")
+                    st.write(f"- **Status:** `{curr_b.processing_status}`")
+                    st.write(f"- **Vessel / Voyage:** {curr_b.vessel or '-'} / {curr_b.voyage or '-'}")
+                    st.write(f"- **Contact:** {curr_b.contact_name or '-'} ({curr_b.contact_email or '-'})")
+                    st.write(f"- **Source Email ID:** `{curr_b.source_email_id}`")
+                    st.write(f"- **Created At:** {curr_b.created_at}")
 
                 # Validation Flags list
-                st.markdown("##### ⚠️ Doğrulama Bayrakları (Validation Flags)")
+                st.markdown("##### ⚠️ Validation Flags")
                 flags = curr_b.validation_flags or []
                 if not flags:
-                    st.success("Tüm doğrulamalar başarılı! Hiçbir engelleyici veya uyarı bayrağı bulunmuyor (READY).")
+                    st.success("All validation checks passed! No blocking or warning flags present (READY).")
                 else:
                     flag_rows = []
                     for fl in flags:
+                        sev = str(fl.get("severity", "")).upper()
                         flag_rows.append({
-                            "Önem Derecesi": "🚫 BLOCKING" if fl.get("severity") == "BLOCKING" else "⚠️ WARNING",
-                            "Alan": fl.get("field"),
-                            "Kural Kodu": fl.get("code"),
-                            "Ham Değer": str(fl.get("raw")),
-                            "Öneri / Açıklama": fl.get("suggestion") or "-",
+                            "Severity": "🚫 BLOCKING" if sev == "BLOCKING" else "⚠️ WARNING",
+                            "Field": fl.get("field"),
+                            "Rule Code": fl.get("code"),
+                            "Raw Value": str(fl.get("raw")),
+                            "Suggestion / Detail": fl.get("suggestion") or "-",
                         })
                     st.dataframe(pd.DataFrame(flag_rows), width="stretch", hide_index=True)
 
                 # Traceability section: Source Email View
-                with st.expander("📬 Orijinal E-posta ve İzlenebilirlik"):
+                with st.expander("📬 Original Source Email & Traceability"):
                     if curr_b.source_email:
                         src = curr_b.source_email
-                        st.write(f"**Konu:** {src.subject}")
-                        st.write(f"**Gönderici:** {src.sender} | **Alınma Tarihi:** {src.received_at}")
-                        st.write(f"**İntent:** `{src.classified_intent}` | **Durum:** `{src.processing_status}`")
-                        st.text_area("Temizlenmiş E-posta Metni (Clean Body)", src.body_clean or src.body_raw or "", height=150)
+                        st.write(f"**Subject:** {src.subject}")
+                        st.write(f"**Sender:** {src.sender} | **Received At:** {src.received_at}")
+                        st.write(f"**Intent:** `{src.classified_intent}` | **Status:** `{src.processing_status}`")
+                        st.text_area("Cleaned Email Body", src.body_clean or src.body_raw or "", height=150)
                     else:
-                        st.write("Kaynak e-posta bilgisi bulunamadı.")
+                        st.write("Source email record not found.")
 
     # ---------------------------------------------------------------------------
     # Tab 2: Review Queue (İnceleme Kuyruğu)
     # ---------------------------------------------------------------------------
 
     with tab_review:
-        st.subheader("🚨 Operatör İnceleme Kuyruğu (Review Queue)")
-        st.caption("Doğrudan rezervasyona dönüşemeyen, insan müdahalesi veya onay bekleyen kaynak e-postalar.")
+        st.subheader("🚨 Operations Review Queue")
+        st.caption("Emails that could not be automatically converted into a booking, requiring human review or action.")
 
         rev_category = st.radio(
-            "Kategori Filtresi",
-            options=["Tümü", "Yetimler (ORPHAN)", "Kopyalar (DUPLICATE)", "Güvenlik Reddi (NEEDS_REVIEW)", "Şüpheli İçerik", "Ek Dosya Referansı", "Boş Gövde"],
+            "Category Filter",
+            options=["All", "Orphans (ORPHAN)", "Duplicates (DUPLICATE)", "Security Rejections (NEEDS_REVIEW)", "Suspicious Content", "Attachment References", "Empty Body"],
             horizontal=True,
         )
 
         cat_map = {
-            "Tümü": None,
-            "Yetimler (ORPHAN)": "orphan",
-            "Kopyalar (DUPLICATE)": "duplicate",
-            "Güvenlik Reddi (NEEDS_REVIEW)": "needs_review",
-            "Şüpheli İçerik": "suspicious",
-            "Ek Dosya Referansı": "attachment",
-            "Boş Gövde": "empty_body",
+            "All": None,
+            "Orphans (ORPHAN)": "orphan",
+            "Duplicates (DUPLICATE)": "duplicate",
+            "Security Rejections (NEEDS_REVIEW)": "needs_review",
+            "Suspicious Content": "suspicious",
+            "Attachment References": "attachment",
+            "Empty Body": "empty_body",
         }
 
         queue_emails = review_queue(category=cat_map.get(rev_category))
-        st.write(f"**Kuyruktaki Kayıt Sayısı:** {len(queue_emails)}")
+        st.write(f"**Records in Queue:** {len(queue_emails)}")
 
         if not queue_emails:
-            st.success("Seçili kategoride inceleme bekleyen e-posta bulunmuyor.")
+            st.success("No emails pending review in the selected category.")
         else:
             q_data = []
             for e in queue_emails:
                 q_data.append({
-                    "E-posta ID": e.email_id,
-                    "Gönderici": e.sender or "⚠️ Yok",
-                    "Konu": e.subject or "-",
-                    "Alınma Zamanı": e.received_at,
-                    "Durum": e.processing_status,
-                    "İntent": e.classified_intent or "-",
-                    "Kopya ID": e.duplicate_of or "-",
-                    "Şüpheli Örüntü": str(e.suspicious_patterns or []),
+                    "Email ID": e.email_id,
+                    "Sender": e.sender or "⚠️ None",
+                    "Subject": e.subject or "-",
+                    "Received At": e.received_at,
+                    "Status": e.processing_status,
+                    "Intent": e.classified_intent or "-",
+                    "Duplicate Of": e.duplicate_of or "-",
+                    "Suspicious Patterns": str(e.suspicious_patterns or []),
                 })
             st.dataframe(pd.DataFrame(q_data), width="stretch", hide_index=True)
 
@@ -414,55 +405,55 @@ def main():
             email_ids = list(email_map.keys())
 
             if email_ids:
-                st.markdown("##### ✉️ E-posta İçeriği İncele")
+                st.markdown("##### ✉️ Inspect Email Content")
                 sel_email_id = st.selectbox(
-                    "İncelemek için e-posta seçin:",
+                    "Select an email to inspect:",
                     options=email_ids,
                 )
                 chosen_email = email_map.get(sel_email_id)
                 if chosen_email:
                     ecol1, ecol2 = st.columns([1, 1])
                     with ecol1:
-                        st.write(f"**E-posta ID:** `{chosen_email.email_id}`")
-                        st.write(f"**Gönderici:** {chosen_email.sender}")
-                        st.write(f"**Konu:** {chosen_email.subject}")
-                        st.write(f"**Durum:** `{chosen_email.processing_status}`")
+                        st.write(f"**Email ID:** `{chosen_email.email_id}`")
+                        st.write(f"**Sender:** {chosen_email.sender}")
+                        st.write(f"**Subject:** {chosen_email.subject}")
+                        st.write(f"**Status:** `{chosen_email.processing_status}`")
                     with ecol2:
-                        st.write(f"**Ek Dosya Referansı Var mı:** {'Evet 📎' if chosen_email.has_attachment_ref else 'Hayır'}")
-                        st.write(f"**Alıntı Var mı:** {'Evet' if chosen_email.has_quote else 'Hayır'}")
-                        st.write(f"**Şüpheli Örüntüler:** `{chosen_email.suspicious_patterns}`")
-                    st.text_area("E-posta Gövdesi", chosen_email.body_clean or chosen_email.body_raw or "", height=180)
+                        st.write(f"**Has Attachment Reference:** {'Yes 📎' if chosen_email.has_attachment_ref else 'No'}")
+                        st.write(f"**Has Quoted Text:** {'Yes' if chosen_email.has_quote else 'No'}")
+                        st.write(f"**Suspicious Patterns:** `{chosen_email.suspicious_patterns}`")
+                    st.text_area("Email Body", chosen_email.body_clean or chosen_email.body_raw or "", height=180)
 
     # ---------------------------------------------------------------------------
     # Tab 3: Operational Charts
     # ---------------------------------------------------------------------------
 
     with tab_charts:
-        st.subheader("📊 Operasyonel Analiz Grafikleri")
-        st.caption(f"Grafikler sol paneldeki filtrelere göre güncellenir ({len(filtered_list)} kayıt).")
+        st.subheader("📊 Operational Analytics Charts")
+        st.caption(f"Charts dynamically update based on sidebar filters ({len(filtered_list)} records).")
 
         if not filtered_list:
-            st.info("Seçili filtrelere uygun kayıt olmadığı için grafik çizilemiyor.")
+            st.info("No records match the selected filters to render charts.")
         else:
             def _count(values) -> pd.DataFrame:
                 counts: dict[str, int] = {}
                 for v in values:
                     counts[v] = counts.get(v, 0) + 1
                 return pd.DataFrame(
-                    [{"Etiket": k, "Adet": n} for k, n in counts.items()]
+                    [{"Label": k, "Count": n} for k, n in counts.items()]
                 )
 
             chart_col1, chart_col2 = st.columns(2)
 
             with chart_col1:
-                st.markdown("##### Rezervasyon Durum Dağılımı")
+                st.markdown("##### Booking Status Breakdown")
                 status_df = _count(b.processing_status for b in filtered_list)
                 fig_status = px.pie(
                     status_df,
-                    names="Etiket",
-                    values="Adet",
+                    names="Label",
+                    values="Count",
                     hole=0.45,
-                    color="Etiket",
+                    color="Label",
                     color_discrete_map={
                         "READY": "#198754",
                         "VALIDATION_REQUIRED": "#ffc107",
@@ -472,34 +463,34 @@ def main():
                 st.plotly_chart(fig_status, width="stretch")
 
             with chart_col2:
-                st.markdown("##### Müşteri Başına Rezervasyon Dağılımı")
+                st.markdown("##### Bookings per Customer")
                 cust_df = _count(
-                    get_customer_display_name(b.customer_id) if b.customer_id else "Bilinmeyen / Eksik"
+                    get_customer_display_name(b.customer_id) if b.customer_id else "Unknown / Missing"
                     for b in filtered_list
                 )
-                fig_cust = px.bar(cust_df, x="Etiket", y="Adet", color="Etiket", text_auto=True)
-                fig_cust.update_layout(showlegend=False, xaxis_title="Müşteri")
+                fig_cust = px.bar(cust_df, x="Label", y="Count", color="Label", text_auto=True)
+                fig_cust.update_layout(showlegend=False, xaxis_title="Customer", yaxis_title="Count")
                 st.plotly_chart(fig_cust, width="stretch")
 
             chart_col3, chart_col4 = st.columns(2)
             with chart_col3:
-                st.markdown("##### POL (Çıkış Limanı) Dağılımı")
+                st.markdown("##### POL (Port of Loading) Distribution")
                 pol_df = _count(
-                    get_port_display_name(b.pol) if b.pol else "Bilinmeyen / Eksik"
+                    get_port_display_name(b.pol) if b.pol else "Unknown / Missing"
                     for b in filtered_list
                 )
-                fig_pol = px.bar(pol_df, x="Etiket", y="Adet", text_auto=True)
-                fig_pol.update_layout(xaxis_title="Liman")
+                fig_pol = px.bar(pol_df, x="Label", y="Count", text_auto=True)
+                fig_pol.update_layout(xaxis_title="Port", yaxis_title="Count")
                 st.plotly_chart(fig_pol, width="stretch")
 
             with chart_col4:
-                st.markdown("##### POD (Varış Limanı) Dağılımı")
+                st.markdown("##### POD (Port of Discharge) Distribution")
                 pod_df = _count(
-                    get_port_display_name(b.pod) if b.pod else "Bilinmeyen / Eksik"
+                    get_port_display_name(b.pod) if b.pod else "Unknown / Missing"
                     for b in filtered_list
                 )
-                fig_pod = px.bar(pod_df, x="Etiket", y="Adet", text_auto=True)
-                fig_pod.update_layout(xaxis_title="Liman")
+                fig_pod = px.bar(pod_df, x="Label", y="Count", text_auto=True)
+                fig_pod.update_layout(xaxis_title="Port", yaxis_title="Count")
                 st.plotly_chart(fig_pod, width="stretch")
 
     # ---------------------------------------------------------------------------
@@ -507,19 +498,19 @@ def main():
     # ---------------------------------------------------------------------------
 
     with tab_chat:
-        st.subheader("💬 Operasyonel Chatbot")
-        st.caption("Veritabanı kayıtları üzerinden doğal dilde operasyonel sorular sorun.")
+        st.subheader("💬 Operations Assistant")
+        st.caption("Ask natural-language questions about database records.")
 
-        st.markdown("**Örnek Sorular:**")
+        st.markdown("**Sample Questions:**")
         scol1, scol2, scol3, scol4 = st.columns(4)
         quick_query = None
-        if scol1.button("ABC Shipping rezervasyonları", width="stretch"):
+        if scol1.button("ABC Shipping bookings", width="stretch"):
             quick_query = "ABC Shipping için kaç rezervasyon var?"
-        if scol2.button("Izmir çıkışlı rezervasyonlar", width="stretch"):
+        if scol2.button("Departing from Izmir", width="stretch"):
             quick_query = "Izmir çıkışlı rezervasyonları göster"
-        if scol3.button("Doğrulama bekleyenler", width="stretch"):
+        if scol3.button("Pending validation", width="stretch"):
             quick_query = "Hangi rezervasyonlar doğrulama bekliyor?"
-        if scol4.button("Son 5 rezervasyon", width="stretch"):
+        if scol4.button("Latest 5 bookings", width="stretch"):
             quick_query = "Son 5 rezervasyonu listele"
 
         # Display chat history
@@ -531,14 +522,14 @@ def main():
                 if "filter_updates" in msg and msg["filter_updates"]:
                     updates = msg["filter_updates"]
                     st.button(
-                        f"🎯 Dashboard Filtrelerini Güncelle ({updates})",
+                        f"🎯 Sync Dashboard Filters ({updates})",
                         key=f"sync_{msg.get('id', id(msg))}",
                         on_click=apply_chat_filter,
                         args=(updates,),
                     )
 
         # Chat input
-        user_input = st.chat_input("Örn: ABC Shipping için kaç rezervasyon var? Veya Izmir çıkışlı olanlar...")
+        user_input = st.chat_input("e.g. How many bookings for ABC Shipping? Or bookings departing from Izmir...")
         active_prompt = quick_query or user_input
 
         if active_prompt:
@@ -546,7 +537,7 @@ def main():
             with st.chat_message("user"):
                 st.markdown(active_prompt)
 
-            with st.spinner("Sorgulanıyor..."):
+            with st.spinner("Querying database..."):
                 response = answer_query(active_prompt)
 
             msg_record = {
@@ -568,7 +559,7 @@ def main():
                     st.dataframe(pd.DataFrame(msg_record["table_data"]), width="stretch", hide_index=True)
                 if "filter_updates" in msg_record:
                     st.button(
-                        f"🎯 Dashboard Filtrelerini Güncelle ({msg_record['filter_updates']})",
+                        f"🎯 Sync Dashboard Filters ({msg_record['filter_updates']})",
                         key=f"sync_now_{msg_record['id']}",
                         on_click=apply_chat_filter,
                         args=(msg_record["filter_updates"],),
