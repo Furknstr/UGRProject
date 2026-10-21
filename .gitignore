@@ -49,3 +49,6 @@ desktop.ini
 data/
 *.zip
 plan/
+cache/
+*.db-wal
+*.db-shm
