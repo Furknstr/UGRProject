@@ -153,7 +153,7 @@ def main() -> None:
     results = run_pipeline(llm=llm)
 
     # Summary
-    print(f"\n✓ Processed {len(results)} emails")
+    print(f"\n[OK] Processed {len(results)} emails")
     intents: dict[str, int] = {}
     for r in results:
         intents[r.message_intent] = intents.get(r.message_intent, 0) + 1

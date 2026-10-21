@@ -439,60 +439,68 @@ def main():
 
     with tab_charts:
         st.subheader("📊 Operasyonel Analiz Grafikleri")
+        st.caption(f"Grafikler sol paneldeki filtrelere göre güncellenir ({len(filtered_list)} kayıt).")
 
-        chart_col1, chart_col2 = st.columns(2)
+        if not filtered_list:
+            st.info("Seçili filtrelere uygun kayıt olmadığı için grafik çizilemiyor.")
+        else:
+            def _count(values) -> pd.DataFrame:
+                counts: dict[str, int] = {}
+                for v in values:
+                    counts[v] = counts.get(v, 0) + 1
+                return pd.DataFrame(
+                    [{"Etiket": k, "Adet": n} for k, n in counts.items()]
+                )
 
-        with chart_col1:
-            st.markdown("##### Rezervasyon Durum Dağılımı")
-            status_df = pd.DataFrame([
-                {"Durum": k, "Adet": v} for k, v in stats["status_counts"].items()
-            ])
-            fig_status = px.pie(
-                status_df,
-                names="Durum",
-                values="Adet",
-                hole=0.45,
-                color="Durum",
-                color_discrete_map={
-                    "READY": "#198754",
-                    "VALIDATION_REQUIRED": "#ffc107",
-                    "CANCELLED": "#dc3545",
-                },
-            )
-            st.plotly_chart(fig_status, width="stretch")
+            chart_col1, chart_col2 = st.columns(2)
 
-        with chart_col2:
-            st.markdown("##### Müşteri Başına Rezervasyon Dağılımı")
-            cust_df = pd.DataFrame([
-                {"Müşteri": get_customer_display_name(k) if k != "Unresolved" else "Bilinmeyen / Eksik", "Adet": v}
-                for k, v in stats["by_customer"].items()
-            ])
-            fig_cust = px.bar(
-                cust_df,
-                x="Müşteri",
-                y="Adet",
-                color="Müşteri",
-                text_auto=True,
-            )
-            fig_cust.update_layout(showlegend=False)
-            st.plotly_chart(fig_cust, width="stretch")
+            with chart_col1:
+                st.markdown("##### Rezervasyon Durum Dağılımı")
+                status_df = _count(b.processing_status for b in filtered_list)
+                fig_status = px.pie(
+                    status_df,
+                    names="Etiket",
+                    values="Adet",
+                    hole=0.45,
+                    color="Etiket",
+                    color_discrete_map={
+                        "READY": "#198754",
+                        "VALIDATION_REQUIRED": "#ffc107",
+                        "CANCELLED": "#dc3545",
+                    },
+                )
+                st.plotly_chart(fig_status, width="stretch")
 
-        chart_col3, chart_col4 = st.columns(2)
-        with chart_col3:
-            st.markdown("##### POL (Çıkış Limanı) Dağılımı")
-            pol_df = pd.DataFrame([
-                {"Liman": get_port_display_name(k), "Adet": v} for k, v in stats["by_pol"].items()
-            ])
-            fig_pol = px.bar(pol_df, x="Liman", y="Adet", text_auto=True)
-            st.plotly_chart(fig_pol, width="stretch")
+            with chart_col2:
+                st.markdown("##### Müşteri Başına Rezervasyon Dağılımı")
+                cust_df = _count(
+                    get_customer_display_name(b.customer_id) if b.customer_id else "Bilinmeyen / Eksik"
+                    for b in filtered_list
+                )
+                fig_cust = px.bar(cust_df, x="Etiket", y="Adet", color="Etiket", text_auto=True)
+                fig_cust.update_layout(showlegend=False, xaxis_title="Müşteri")
+                st.plotly_chart(fig_cust, width="stretch")
 
-        with chart_col4:
-            st.markdown("##### POD (Varış Limanı) Dağılımı")
-            pod_df = pd.DataFrame([
-                {"Liman": get_port_display_name(k), "Adet": v} for k, v in stats["by_pod"].items()
-            ])
-            fig_pod = px.bar(pod_df, x="Liman", y="Adet", text_auto=True)
-            st.plotly_chart(fig_pod, width="stretch")
+            chart_col3, chart_col4 = st.columns(2)
+            with chart_col3:
+                st.markdown("##### POL (Çıkış Limanı) Dağılımı")
+                pol_df = _count(
+                    get_port_display_name(b.pol) if b.pol else "Bilinmeyen / Eksik"
+                    for b in filtered_list
+                )
+                fig_pol = px.bar(pol_df, x="Etiket", y="Adet", text_auto=True)
+                fig_pol.update_layout(xaxis_title="Liman")
+                st.plotly_chart(fig_pol, width="stretch")
+
+            with chart_col4:
+                st.markdown("##### POD (Varış Limanı) Dağılımı")
+                pod_df = _count(
+                    get_port_display_name(b.pod) if b.pod else "Bilinmeyen / Eksik"
+                    for b in filtered_list
+                )
+                fig_pod = px.bar(pod_df, x="Etiket", y="Adet", text_auto=True)
+                fig_pod.update_layout(xaxis_title="Liman")
+                st.plotly_chart(fig_pod, width="stretch")
 
     # ---------------------------------------------------------------------------
     # Tab 4: Natural Language Chatbot
