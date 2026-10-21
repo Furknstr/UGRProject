@@ -7,18 +7,27 @@ AI destekli e-posta rezervasyon (booking) ayrıştırma, doğrulama ve sorgulama
 ## Mimari
 
 ```mermaid
-flowchart LR
-    A[data/emails/*.txt] --> B[Preprocessor<br/>alıntı/HTML temizliği, risk bayrakları, hash]
-    B --> C[LLM Parser<br/>Ollama qwen2.5:7b, yapılandırılmış JSON]
-    C --> D[Validator<br/>master data, tarih/sayı normalizasyonu, iş kuralları]
-    D --> E{Guard<br/>agent.py}
-    E -->|güvenli| F[(SQLite<br/>source_emails · bookings<br/>booking_events · processing_log)]
-    E -->|reddedildi| G[NEEDS_REVIEW / VALIDATION_REQUIRED]
+flowchart TB
+    subgraph Katman1 ["1. Veri İşleme ve Doğrulama (Satır 1)"]
+        direction LR
+        A["data/emails/*.txt"] --> B["Preprocessor<br/>alıntı/HTML temizliği, risk bayrakları, hash"]
+        B --> C["LLM Parser<br/>Ollama qwen2.5:7b, yapılandırılmış JSON"]
+        C --> D["Validator<br/>master data, tarih/sayı normalizasyonu, iş kuralları"]
+        D --> E{"Guard<br/>agent.py"}
+    end
+
+    subgraph Katman2 ["2. Depolama ve Arayüz (Satır 2)"]
+        direction LR
+        F[("SQLite<br/>source_emails · bookings<br/>booking_events · processing_log")] --> H["db/repository.py<br/>ortak sorgu katmanı"]
+        H --> I["Streamlit Dashboard"]
+        H --> J["Chatbot<br/>chat_router.py"]
+        J -->|filtre senkronu| I
+    end
+
+    %% Alt satıra geçiş bağlantıları
+    E -->|güvenli| F
+    E -->|reddedildi| G["NEEDS_REVIEW / VALIDATION_REQUIRED"]
     G --> F
-    F --> H[db/repository.py<br/>ortak sorgu katmanı]
-    H --> I[Streamlit Dashboard]
-    H --> J[Chatbot<br/>chat_router.py]
-    J -->|filtre senkronu| I
 ```
 
 | Katman | Dosya | Sorumluluk |
@@ -106,17 +115,27 @@ uv run pytest
 - Toplam booking sayısı yalnızca `bookings` tablosunu sayar (yetim, durum sorgusu ve rezervasyon-dışı e-postalar dahil değildir).
 - Chatbot sayıları şablonla üretilir; LLM sayı yazmaz. Kayıtta olmayan bilgi için sabit yanıt döner: *"Bu bilgi mevcut kayıtlarda bulunmuyor."*
 
-## Bilinen Limitler
+## Bilinen Limitler ve Eksiklikler
 
-> 7B model, iki düzeltme e-postasını (014, 015) yeni talep sandı. Bu iki kayıt VALIDATION_REQUIRED'a düştü, READY olmadı.
+Aşağıdaki tablo, sistemin mevcut sınırlarını, nedenlerini ve sonraki aşamadaki olası çözümlerini özetlemektedir:
+
+| Eksiklik / Sınır | Kök Neden | Olası Çözüm | Örnek Senaryo |
+|---|---|---|---|
+| **Düzeltme E-postasını Güncelleme Olarak Yakalayamamak** (014, 015) | 7B model konuşma bağlamını kaçırdı; düzeltmeyi yeni talep sandı. | Few-shot prompting veya daha güçlü bir model (GPT-4o/Claude) kullanımı. | *"Correction: please update date to 15.10.2026"* |
+| **Yetim Güncellemeleri Bulanık (Fuzzy) Eşleştirememek** (003, 007) | Sistem yalnızca tam referans eşleşmesi arar; bulamayınca kaydı doğrudan `ORPHAN` yapar. | Müşteri ve tarih penceresi üzerinden aday kaydı puanlayan Fuzzy Matcher ile operatör önerisi sunmak. | *"Lütfen dünkü rezervasyonumuzun yükleme tarihini değiştirin"* |
+| **Ek Dosyaların İçeriğini Okuyamamak** (029) | Sistemde bir OCR veya PDF/Excel ayrıştırıcı boru hattı (pipeline) yok. | Boru hattının başına `pypdf`, OCR veya multimodal LLM eklenerek ekleri metne dökmek. | *"Please find attached our booking request and VIN list"* |
+| **Bilinmeyen Domainden Gelen Gerçek Müşteriler** | Gönderici/müşteri uyuşmazlığı kuralı (`SENDER_CUSTOMER_MISMATCH`) doğrudan şüpheli sayar. | Kişisel e-postaları iletişim listesine eklemek veya şirket domainine doğrulama kodu göndermek. | Kayıtlı ABC Shipping yetkilisinin kişisel/farklı bir adresten talep atması. |
+
+> **Güvenlik Notu:** Bu 4 sınırın tamamı sistemin güvenlik zırhı sayesindedir; model/veri yetersiz kaldığında hiçbir hatalı kayıt `READY` yapılmaz, doğrudan `VALIDATION_REQUIRED` veya `ORPHAN` karantinasına alınır.
 
 - **Golden set uyumu:** 34 e-postanın 14'ü golden set ile tam eşleşiyor. Sapmaların çoğu uyarı bayraklarında (ör. `QUANTITY_FROM_VIN_COUNT`) ve model kaynaklı alan farklarında; ayrıntı için `docs/eval_results.md`. Güvenlik özelliği ölçüldü: beklenen 9 READY kayıt dışında hiçbir kayıt READY değil.
-- **Yetim güncelleme/iptal:** Mevcut bir kayda bağlanamayan güncelleme/iptal e-postaları (003, 007, 023, 030) `bookings`'e girmez, İnceleme Kuyruğu'nda `ORPHAN` olarak görünür. Bunlardan yeni kayıt türetilmez.
 - **Güncelleme/iptal testleri sentetiktir:** Veri setinde yalnızca 013 gerçek bir kaydı (D100) bulur; diğer akışlar sentetik create→update/cancel testleriyle doğrulanır.
-- **Ekler okunmaz:** Ek referansı (ör. 029) yalnızca işaretlenir ve `MISSING_ATTACHMENT` bayrağıyla inceleme ister.
-- **Küçük model:** 7B model yönlendirme ve ayıklamada hata yapabilir; bu yüzden karar mantığı modele bırakılmamıştır.
 - **Canlı posta kutusu, kimlik doğrulama ve bulut dağıtımı kapsam dışıdır.**
 
-## Üretime Geçmeden Önce
+## Üretime Geçmeden Önce Yapılacaklar
 
-PostgreSQL + Alembic göçleri, insan onay ekranı (özellikle `NEEDS_REVIEW`), gerçek posta kutusu entegrasyonu, daha güçlü bir model ve gözlemlenebilirlik (yapılandırılmış log + metrikler).
+1. **Veritabanı Göçü (Migration):** PostgreSQL + Alembic entegrasyonu.
+2. **Operatör Arayüzü:** `NEEDS_REVIEW` durumundaki kayıtlar için insan onay ve düzenleme ekranı.
+3. **Ek Dosya Pipeline'ı:** OCR ve `pypdf` / multimodal LLM desteği ile PDF/Excel içeriklerinin ayrıştırılması.
+4. **Gelişmiş Eşleştirme:** Yetim güncellemeler için kural tabanlı Fuzzy Matcher entegrasyonu.
+5. **Gözlemlenebilirlik (Observability):** Yapılandırılmış loglama (Structured Logging) ve metrik takibi.
