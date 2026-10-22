@@ -40,6 +40,27 @@ flowchart TB
 | Query Layer | `db/repository.py` | Dashboard and chatbot call the **same** functions, ensuring consistent numbers |
 | Interface | `ui/app.py`, `ui/chat_router.py`, `app.py` | KPIs, filters, data table, Review Queue, charts, chatbot |
 
+### Pipeline Decision Flow
+
+```mermaid
+flowchart TD
+    E["Incoming Email"] --> P["Preprocessor"]
+    P --> L["LLM: intent + raw fields"]
+    L --> V["Validator: pure function, no DB"]
+    V --> I{"intent"}
+    I -->|CREATE_BOOKING| D{"Duplicate?<br/>content hash or ref/VIN conflict"}
+    D -->|yes| DUP["source_email = DUPLICATE<br/>no booking created"]
+    D -->|no| C["create_booking<br/>VALIDATION_REQUIRED if blocking flags exist<br/>otherwise READY"]
+    I -->|UPDATE / CANCEL| R{"booking_ref present?"}
+    R -->|no| OR["ORPHAN"]
+    R -->|yes| S{"Security gates<br/>suspicious content, sender mismatch"}
+    S -->|failed| NR["NEEDS_REVIEW"]
+    S -->|passed| OP["update_booking / cancel_booking"]
+    OP -->|ref not in DB| OR
+    OP -->|cancelled record| NR
+    I -->|NON_BOOKING / STATUS / UNKNOWN| NA["NO_ACTION"]
+```
+
 ## Installation
 
 ```bash
