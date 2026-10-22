@@ -1,0 +1,21 @@
+Email-ID: EMAIL-006
+From: planning@ghi-logistics.example
+To: ops@ugr.example
+Date: 2026-08-20 08:55
+Subject: Updated load list - Vessel1 / Voy1
+------------------------------------------------------------------------
+Please find the updated load list for Vessel1 Voy1.
+
+You need to support us in moving 1021 units.
+
+Region A | BLCODE0000001 | Vessel1 | Japan | 99 | Above 2m: 26 | Weight 220965 | CBM 2003.116 | SQM 995.06
+Region B | BLCODE0000001 | Vessel1 | Japan | 276 | Above 2m: 11 | Weight 674690 | CBM 5334.411 | SQM 2611.28
+Region C | BLCODE0000002 | Vessel1 | Japan | 250 | Above 2m: 28 | Weight 656135 | CBM 5088.565 | SQM 2465.14
+Region A | BLCODE0000003 | Vessel1 | Japan | 29 | Above 2m: 9 | Weight 70580 | CBM 639.111 | SQM 305.31
+Region A | BLCODE0000004 | Vessel1 | Japan | 113 | Above 2m: 32 | Weight 272385 | CBM 2377.311 | SQM 1166.85
+Region D | BLCODE0000005 | Vessel1 | Japan | 86 | Above 2m: 0 | Weight 206675 | CBM 1642.912 | SQM 838.63
+Region D | BLCODE0000006 | Vessel1 | Japan | 71 | Above 2m: 0 | Weight 176600 | CBM 1377.260 | SQM 713.48
+Region D | BLCODE0000007 | Vessel1 | Japan | 97 | Above 2m: 44 | Weight 231250 | CBM 2281.702 | SQM 1045.60
+
+TOTAL: 1021 units
+This is a load-list update, not a new booking request.

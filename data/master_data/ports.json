@@ -1,0 +1,90 @@
+[
+  {
+    "port_code": "ITGOA",
+    "name": "Genoa",
+    "aliases": [
+      "GENOA",
+      "Genova"
+    ]
+  },
+  {
+    "port_code": "SAJED",
+    "name": "Jeddah",
+    "aliases": [
+      "JEDDAH",
+      "JEDAH"
+    ]
+  },
+  {
+    "port_code": "SAYNB",
+    "name": "Yanbu",
+    "aliases": [
+      "YANBU"
+    ]
+  },
+  {
+    "port_code": "ESSAG",
+    "name": "Sagunto",
+    "aliases": [
+      "SAGUNTO",
+      "SAG"
+    ]
+  },
+  {
+    "port_code": "FRMRS",
+    "name": "Marseille",
+    "aliases": [
+      "MARSEILLE"
+    ]
+  },
+  {
+    "port_code": "LKHBA",
+    "name": "Hambantota",
+    "aliases": [
+      "HAMBANTOTA"
+    ]
+  },
+  {
+    "port_code": "ESBCN",
+    "name": "Barcelona",
+    "aliases": [
+      "BARCELONA"
+    ]
+  },
+  {
+    "port_code": "GRPIR",
+    "name": "Piraeus",
+    "aliases": [
+      "PIRAEUS"
+    ]
+  },
+  {
+    "port_code": "SIKOP",
+    "name": "Koper",
+    "aliases": [
+      "KOPER"
+    ]
+  },
+  {
+    "port_code": "TRIZM",
+    "name": "Izmir",
+    "aliases": [
+      "IZMIR",
+      "İZMİR"
+    ]
+  },
+  {
+    "port_code": "ITLIV",
+    "name": "Livorno",
+    "aliases": [
+      "LIVORNO"
+    ]
+  },
+  {
+    "port_code": "ESVLC",
+    "name": "Valencia",
+    "aliases": [
+      "VALENCIA"
+    ]
+  }
+]

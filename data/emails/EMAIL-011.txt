@@ -1,0 +1,23 @@
+Email-ID: EMAIL-011
+From: booking@abcshipping.example
+To: booking@ugr.example
+Date: 2026-10-05 09:20
+Subject: 4 vehicles Genoa - Yanbu
+------------------------------------------------------------------------
+ABC Shipping
+
+POL: GENOA
+POD: YANBU
+Cargo: 4 commercial vehicles
+Quantity: 4
+Weight: 6900 kg each
+Dimensions: 6.0 x 2.45 x 3.3 m
+Requested date: 24/10/2026
+
+VINs:
+ANONVIN0000000028
+ANONVIN0000000029
+ANONVIN0000000030
+ANONVIN000000003X
+
+Please book.

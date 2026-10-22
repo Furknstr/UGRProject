@@ -1,0 +1,27 @@
+Email-ID: EMAIL-023
+From: ops@abcshipping.example
+To: booking@ugr.example
+Date: 2026-10-09 11:45
+Subject: BOOKINGREF-A310 - reduce quantity
+------------------------------------------------------------------------
+Update for BOOKINGREF-A310.
+
+Original booking was 8 units.
+Please reduce to 6 units.
+
+Remove these VINs:
+ANONVIN0000000060
+ANONVIN0000000061
+
+Keep:
+ANONVIN0000000054
+ANONVIN0000000055
+ANONVIN0000000056
+ANONVIN0000000057
+ANONVIN0000000058
+ANONVIN0000000059
+
+POL GENOA
+POD JEDDAH
+
+ABC Shipping

@@ -1,0 +1,25 @@
+Email-ID: EMAIL-030
+From: booking@xyzlojistik.example
+To: booking@ugr.example
+Date: 2026-10-09 15:26
+Subject: RE: BOOKINGREF-X300 - CANCEL
+------------------------------------------------------------------------
+LATEST INSTRUCTION:
+Please CANCEL BOOKINGREF-X300.
+Do not create or load the units.
+
+XYZ Lojistik
+
+----- Original Message -----
+From: booking@xyzlojistik.example
+Sent: 08 October 2026 10:00
+Subject: BOOKINGREF-X300 - New booking
+
+Please CREATE booking BOOKINGREF-X300.
+POL: SAGUNTO
+POD: JEDDAH
+Cargo: 2 USED TRUCK HEADS
+VIN: ANONVIN0000000068
+VIN: ANONVIN0000000069
+Weight: 7600 KG each
+----- End Original Message -----

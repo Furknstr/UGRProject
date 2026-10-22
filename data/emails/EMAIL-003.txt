@@ -1,0 +1,27 @@
+Email-ID: EMAIL-003
+From: booking@xyzlojistik.example
+To: booking@ugr.example
+Date: 2026-09-30 10:05
+Subject: CHANGE REQUEST - BOOKINGREF-X001
+------------------------------------------------------------------------
+As we discussed, XYZ client requests to change booking BOOKINGREF-X001.
+
+Previous POL was Marseille.
+NEW POL: SAGUNTO
+POD: JEDDAH
+
+Please replace the units with below:
+
+3 X USED MAN TGX 470 TRUCKHEADS
+5.8 x 2.5 x 3.7 m
+7500 KGS each
+
+VINs:
+ANONVIN0000000007
+ANONVIN0000000008
+
+Rate agreed:
+EUR 1 + 10% war risk
+THC EUR 1
+
+Awaiting revised booking.

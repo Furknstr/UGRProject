@@ -1,0 +1,22 @@
+{
+  "message_intent": "CREATE_BOOKING|UPDATE_BOOKING|CANCEL_BOOKING|STATUS_INQUIRY|NON_BOOKING|UNKNOWN",
+  "booking_ref": "string|null",
+  "customer": "string|null",
+  "pol": "string|null",
+  "pod": "string|null",
+  "cargo_description": "string|null",
+  "quantity": "integer|null",
+  "vin_list": "array[string]",
+  "weight_kg_per_unit": "number|null",
+  "length_m": "number|null",
+  "width_m": "number|null",
+  "height_m": "number|null",
+  "requested_date": "YYYY-MM-DD|null",
+  "vessel": "string|null",
+  "voyage": "string|null",
+  "rate_text": "string|null",
+  "contact_name": "string|null",
+  "contact_email": "string|null",
+  "source_email_id": "string",
+  "processing_status": "RECEIVED|PARSED|VALIDATION_REQUIRED|READY|ASSIGNED|CANCELLED"
+}

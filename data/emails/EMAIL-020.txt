@@ -1,0 +1,18 @@
+Email-ID: EMAIL-020
+From: ops@ghi-logistics.example
+To: booking@ugr.example
+Date: 2026-10-08 15:10
+Subject: Booking for 31/02/2026
+------------------------------------------------------------------------
+Customer: GHI Global Logistics
+POL: PIRAEUS
+POD: JEDDAH
+Cargo: 2 coach buses
+Quantity: 2
+Requested sailing: 31/02/2026
+Weight: 12400 kg each
+Dims: 12.0 x 2.55 x 3.75 m
+
+VIN:
+ANONVIN0000000049
+ANONVIN0000000050

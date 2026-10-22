@@ -1,0 +1,34 @@
+[
+  {
+    "customer_id": "CUST-001",
+    "name": "ABC Shipping",
+    "aliases": [
+      "ABC Shipping Ltd.",
+      "ABC Ship"
+    ]
+  },
+  {
+    "customer_id": "CUST-002",
+    "name": "XYZ Lojistik",
+    "aliases": [
+      "XYZ Logistics",
+      "XYZ Loj"
+    ]
+  },
+  {
+    "customer_id": "CUST-003",
+    "name": "DEF Automotive",
+    "aliases": [
+      "DEF Auto",
+      "DEF Motors"
+    ]
+  },
+  {
+    "customer_id": "CUST-004",
+    "name": "GHI Global Logistics",
+    "aliases": [
+      "GHI Logistics",
+      "GHI Global"
+    ]
+  }
+]

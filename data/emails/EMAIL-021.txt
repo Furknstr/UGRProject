@@ -1,0 +1,17 @@
+Email-ID: EMAIL-021
+From: booking@xyzlojistik.example
+To: booking@ugr.example
+Date: 2026-10-09 08:16
+Subject: Sagunto-Jeddah 2 units
+------------------------------------------------------------------------
+XYZ Lojistik
+POL SAGUNTO
+POD JEDDAH
+
+2 x used MAN truck heads
+Weight: 7200
+Dimensions: 5.9 x 2.5 x 3.6 m
+VIN ANONVIN0000000051
+VIN ANONVIN0000000052
+
+Requested sailing: 02/11/2026

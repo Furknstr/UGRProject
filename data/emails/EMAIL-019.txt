@@ -1,0 +1,23 @@
+Email-ID: EMAIL-019
+From: export@defauto.example
+To: booking@ugr.example
+Date: 2026-10-08 13:14
+Subject: 4 SUVs Barcelona - Jeddah
+------------------------------------------------------------------------
+Customer DEF Automotive
+POL BARCELONA
+POD JEDDAH
+Quantity: 4
+Cargo: NEW SUV
+Requested date: 28/10/2026
+Weight each: 2050 kg
+Dims each: 4.90 x 1.95 x 1.75 m
+
+VIN list:
+ANONVIN0000000044
+ANONVIN0000000045
+ANONVIN0000000046
+ANONVIN0000000047
+ANONVIN0000000048
+
+Please confirm.

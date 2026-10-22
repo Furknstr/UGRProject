@@ -1,0 +1,31 @@
+Email-ID: EMAIL-001
+From: ops@abcshipping.example
+To: booking@ugr.example
+Date: 2026-09-02 09:12
+Subject: September booking request - MAN trucks
+------------------------------------------------------------------------
+Dear Ahmet and Mehmet,
+
+Please issue the following booking.
+
+Rate agreed 11 EUR + 1 EUR war risk
+FOB 2 EUR
+
+POL GENOA
+POD JEDDAH / YANBU
+SEPTEMBER SAILING
+
+ANONVIN0000000001 MAN truck
+ANONVIN0000000002 MAN truck
+ANONVIN0000000003 MAN truck
+
+WEIGHT 7,330 KG each
+
+DIMS
+L 6.2  W 2.5  H 3.9
+
+Payer party and booking party:
+ABC Shipping
+
+Regards,
+Operations

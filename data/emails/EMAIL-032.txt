@@ -1,0 +1,25 @@
+Email-ID: EMAIL-032
+From: export@defauto.example
+To: booking@ugr.example
+Date: 2026-10-09 16:02
+Subject: Reserva nueva / yeni booking / BOOKINGREF-D250
+------------------------------------------------------------------------
+Hola / Merhaba,
+
+Customer: DEF Automotive
+POL: BARCELONA
+POD: JEDDAH
+
+Cargo: 2 NEW VANS
+Quantity: 2
+
+VIN	ANONVIN0000000071
+VIN	ANONVIN0000000072
+
+Peso / Weight each: 7.330,50 KG
+Medidas / Ölçüler: 6,20 x 2.450 x 3,10 m
+
+Requested date: null
+Sailing: next available after 25/11/2026
+
+Please create booking if data is sufficient.

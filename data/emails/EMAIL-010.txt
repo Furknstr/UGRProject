@@ -1,0 +1,20 @@
+Email-ID: EMAIL-010
+From: jktransport@example
+To: booking@ugr.example
+Date: 2026-10-04 16:05
+Subject: Booking request - Koper to Jeddah
+------------------------------------------------------------------------
+Customer: J.K. Transport
+POL: KOPER
+POD: JEDDAH
+Cargo: 2 used tractor heads
+Quantity: 2
+Weight: 7800 kg each
+Dims: 6.1 x 2.5 x 3.8 m
+Requested date: 20 October 2026
+
+VINs:
+ANONVIN0000000026
+ANONVIN0000000027
+
+Please create booking.

@@ -1,0 +1,26 @@
+Email-ID: EMAIL-008
+From: export@defauto.example
+To: booking@ugr.example
+Date: 2026-10-03 09:25
+Subject: BOOKINGREF-D100 - 5 pickup trucks BCN-JED
+------------------------------------------------------------------------
+New booking request.
+
+Customer: DEF Automotive
+Booking Ref: BOOKINGREF-D100
+POL: BARCELONA
+POD: JEDDAH
+Requested sailing: 18/10/2026
+
+Cargo: 5 NEW PICKUP TRUCKS
+Dimensions each: 5.35 x 1.90 x 1.82 m
+Weight each: 2180 KG
+
+VIN:
+ANONVIN0000000019
+ANONVIN0000000020
+ANONVIN0000000021
+ANONVIN0000000022
+ANONVIN0000000023
+
+Please confirm booking.

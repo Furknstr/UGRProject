@@ -1,0 +1,14 @@
+Email-ID: EMAIL-024
+From: customer.service@xyzlojistik.example
+To: booking@ugr.example
+Date: 2026-10-09 13:02
+Subject: Status request - BOOKINGREF-X001
+------------------------------------------------------------------------
+Hello,
+
+Can you confirm whether BOOKINGREF-X001 has been accepted and assigned to a sailing?
+
+This is only a status request. No booking details have changed.
+
+Thanks,
+XYZ Lojistik

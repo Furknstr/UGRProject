@@ -1,0 +1,19 @@
+Email-ID: EMAIL-027
+From: ops@ghi-logistics.example
+To: booking@ugr.example
+Date: 2026-10-09 14:35
+Subject: Booking request - Piraeus / Yanbu
+------------------------------------------------------------------------
+<html><body><div>
+Customer: GHI Global Logistics<br>
+POL: PIRAEUS<br>
+POD: YANBU<br>
+Cargo: 2 x NEW COACH BUS<br>
+VIN: ANONVIN0000000063<br>
+VIN: ANONVIN0000000064<br>
+Weight: 12,400 KG each<br>
+Dims: 12.0 x 2.55 x 3.80 m<br>
+Requested date: 15-11-2026<br>
+<div><b>IMPORTANT &nbsp;&nbsp;&nbsp;
+Please create booking
+</body>

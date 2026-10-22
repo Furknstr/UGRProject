@@ -1,0 +1,18 @@
+Email-ID: EMAIL-018
+From: ops@abcshipping.example
+To: booking@ugr.example
+Date: 2026-10-08 10:25
+Subject: Please book 3 units as usual
+------------------------------------------------------------------------
+Hi,
+
+Please book 3 units for ABC Shipping as usual next week.
+
+VINs:
+ANONVIN0000000041
+ANONVIN0000000042
+ANONVIN0000000043
+
+Same port and same rate as last time.
+
+Thanks.

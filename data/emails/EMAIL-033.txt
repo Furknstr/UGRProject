@@ -1,0 +1,30 @@
+Email-ID: EMAIL-033
+From: booking@abcshipping.example
+To: booking@ugr.example
+Date: 2026-10-09 16:20
+Subject: New booking request - Izmir to Livorno / 3 units
+------------------------------------------------------------------------
+Dear team,
+
+Please create the below booking.
+
+Customer: ABC Shipping
+Booking Ref: BOOKINGREF-A400
+POL: IZMIR
+POD: LIVORNO
+Requested sailing: 10/11/2026
+
+Cargo: 3 NEW LIGHT COMMERCIAL VEHICLES
+Quantity: 3
+Weight each: 2850 KG
+Dimensions each: 5.40 x 2.05 x 2.15 m
+
+VINs:
+ANONVIN0000000073
+ANONVIN0000000074
+ANONVIN0000000075
+
+Contact: Ayse Demir
+Contact e-mail: operations@abcshipping.example
+
+Please confirm booking.

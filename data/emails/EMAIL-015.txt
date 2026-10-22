@@ -1,0 +1,26 @@
+Email-ID: EMAIL-015
+From: ops@abcshipping.example
+To: booking@ugr.example
+Date: 2026-10-07 08:48
+Subject: RE: BOOKINGREF-A220 quantity correction
+------------------------------------------------------------------------
+LATEST UPDATE:
+
+For BOOKINGREF-A220 please book 4 units only.
+
+VINs to use:
+ANONVIN0000000031
+ANONVIN0000000032
+ANONVIN0000000033
+ANONVIN0000000034
+
+POL GENOA
+POD JEDDAH
+
+----- Previous message -----
+Please book 6 units from Genoa to Jeddah for ABC Shipping.
+VINs: ANONVIN0000000031, ANONVIN0000000032, ANONVIN0000000033,
+ANONVIN0000000034, ANONVIN0000000035, ANONVIN0000000036
+----- End previous message -----
+
+Please follow the latest update above.

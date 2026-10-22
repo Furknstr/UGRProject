@@ -1,0 +1,17 @@
+Email-ID: EMAIL-029
+From: ops@abcshipping.example
+To: booking@ugr.example
+Date: 2026-10-09 15:12
+Subject: Booking request - details attached
+------------------------------------------------------------------------
+Dear team,
+
+Please arrange the booking based on the attached Excel file.
+
+Customer: ABC Shipping
+POL: GENOA
+POD: JEDDAH
+
+All cargo details, VINs, quantity, weight and dimensions are in the attachment.
+
+Regards

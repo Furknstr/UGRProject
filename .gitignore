@@ -46,7 +46,6 @@ Thumbs.db
 desktop.ini
 
 # Case dataset & zip (confidential case data)
-data/
 *.zip
 plan/
 cache/

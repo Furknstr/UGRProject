@@ -1,0 +1,24 @@
+Email-ID: EMAIL-028
+From: export@defauto.example
+To: booking@ugr.example
+Date: 2026-10-09 15:00
+Subject: Booking request BOOKINGREF-D200
+------------------------------------------------------------------------
+Customer: DEF Automotive
+Booking Ref: BOOKINGREF-D200
+
+POL: BARCELONA
+POD: JEDDAH
+
+Cargo: 3 NEW SUVs
+Quantity: 3
+
+Requested sailing: 20/11/2026
+
+Please note correction below:
+POD should be YANBU, not JEDDAH.
+
+VINs:
+ANONVIN0000000065
+ANONVIN0000000066
+ANONVIN0000000067

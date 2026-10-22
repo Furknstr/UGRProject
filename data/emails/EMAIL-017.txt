@@ -1,0 +1,23 @@
+Email-ID: EMAIL-017
+From: booking@xyzlojistik.example
+To: booking@ugr.example
+Date: 2026-10-08 09:00
+Subject: Two urgent bookings - Sagunto
+------------------------------------------------------------------------
+Please arrange below two bookings for XYZ Lojistik.
+
+BOOKING A
+POL: SAGUNTO
+POD: JEDDAH
+2 x USED TRUCK HEADS
+VIN: ANONVIN0000000038, ANONVIN0000000039
+Weight: 7600 kg each
+
+BOOKING B
+POL: SAGUNTO
+POD: YANBU
+1 x USED TRUCK HEAD
+VIN: ANONVIN0000000040
+Weight: 7550 kg
+
+Same sailing week if possible.

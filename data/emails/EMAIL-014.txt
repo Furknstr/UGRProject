@@ -1,0 +1,15 @@
+Email-ID: EMAIL-014
+From: booking@xyzlojistik.example
+To: booking@ugr.example
+Date: 2026-10-06 12:30
+Subject: Correction - BOOKINGREF-X002 destination
+------------------------------------------------------------------------
+Correction for BOOKINGREF-X002.
+
+The POD in our previous mail was wrong.
+Please use YANBU instead of JEDDAH.
+
+POL remains SAGUNTO.
+All other cargo details remain unchanged.
+
+XYZ Lojistik

@@ -1,0 +1,7 @@
+Email-ID: EMAIL-025
+From: ops@abcshipping.example
+To: booking@ugr.example
+Date: 2026-10-09 14:10
+Subject: URGENT BOOKING REQUEST - 3 UNITS GENOA JEDDAH
+------------------------------------------------------------------------
+

@@ -1,0 +1,17 @@
+Email-ID: EMAIL-022
+From: ops@abcshipping.example
+To: booking@ugr.example
+Date: 2026-10-09 09:05
+Subject: Genoa - Jedah / 1 unit
+------------------------------------------------------------------------
+ABC Shipping booking request
+
+POL: GENOA
+POD: JEDAH
+Cargo: 1 NEW TRACTOR HEAD
+VIN: ANONVIN0000000053
+Weight: 7350 kg
+Dims: 6.15 x 2.50 x 3.85 m
+Requested date: 05/11/2026
+
+Please issue booking.

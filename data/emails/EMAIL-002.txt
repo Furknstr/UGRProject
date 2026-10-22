@@ -1,0 +1,24 @@
+Email-ID: EMAIL-002
+From: booking@xyzlojistik.example
+To: booking@ugr.example
+Date: 2026-09-28 14:40
+Subject: New BKG request - 3 used head trucks
+------------------------------------------------------------------------
+Please find below new bkg request for next Lady SFB ex SAG 10/10/2026.
+
+XYZ Lojistik
+POL SAGUNTO
+POD JEDDAH
+CARGO 3 USED HEAD TRUCKS
+DIM 6 x 2.5 x 4 m
+Peso 8000 KG each
+
+VINS
+ANONVIN0000000004
+ANONVIN0000000005
+ANONVIN0000000006
+
+Rate EUR 1 / lm free out
+THC EUR 1 per unit.
+
+Thanks.

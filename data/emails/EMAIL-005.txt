@@ -1,0 +1,26 @@
+Email-ID: EMAIL-005
+From: projectcargo@defauto.example
+To: booking@ugr.example
+Date: 2026-09-21 16:10
+Subject: 10 new MAN TGL trucks - booking data
+------------------------------------------------------------------------
+Please see below all the data needed to arrange the 10 units booking.
+
+10 x new MAN TGL trucks
+Dims: 650 x 227 x 260 cm
+Weight: 6000 kg each
+
+VIN numbers:
+ANONVIN0000000009
+ANONVIN0000000010
+ANONVIN0000000011
+ANONVIN0000000012
+ANONVIN0000000013
+ANONVIN0000000014
+ANONVIN0000000015
+ANONVIN0000000016
+ANONVIN0000000017
+ANONVIN0000000018
+
+Regards,
+DEF Automotive

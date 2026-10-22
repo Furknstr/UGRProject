@@ -1,0 +1,20 @@
+Email-ID: EMAIL-004
+From: rates@ghi-logistics.example
+To: sales@ugr.example
+Date: 2026-09-18 11:20
+Subject: 62' MAFI availability / Yanbu - Sagunto
+------------------------------------------------------------------------
+We have 1 x 62' MAFI available at Yanbu Port. Please find the below charges.
+
+POL: Yanbu
+POD: Sagunto
+Cargo Details: 1 Coach Bus on MAFI
+
+Ocean Freight: USD 1 w/m
+Terms: FIFO Basis
+
+62' MAFI dimensions: 18.3 x 3.0 x 4.0 m
+
+Please note final dimensions will be measured at Jebel Ali and any variation may lead to a rate revision.
+
+This is for your rate review only.

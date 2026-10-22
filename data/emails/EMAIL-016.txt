@@ -1,0 +1,20 @@
+Email-ID: EMAIL-016
+From: ops@ghi-logistics.example
+To: booking@ugr.example
+Date: 2026-10-07 10:12
+Subject: New bkg // Piraeus -> Yanbu
+------------------------------------------------------------------------
+<html><body>
+*** NEW BOOKING ***
+Customer&nbsp;: GHI Global Logistics
+POL:: PIRAEUS
+POD:: YANBU
+
+Cargo >>> 1 x NEW CITY BUS
+VIN = ANONVIN0000000037
+Weight = 11800 KG
+Dims = 11.9 x 2.50 x 3.40 m
+Sailing = 30-10-2026
+
+Pls proceed !!! ### ### ###
+</body></html>

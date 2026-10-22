@@ -1,0 +1,14 @@
+Email-ID: EMAIL-026
+To: booking@ugr.example
+Date: 2026-10-09 14:22
+Subject: New booking - SÃGUNTO to JEDD�H
+------------------------------------------------------------------------
+Customer: XYZ Lojistik
+POL: SÃGUNTO
+POD: JEDD�H
+Cargo: 1 USED TRUCK HEAD
+VIN: ANONVIN0000000062
+Weight: 7 450 KG
+Dims: 5,9 x 2,5 x 3,7 m
+Requested date: 12/11/2026
+Please proceed.

@@ -1,0 +1,22 @@
+Email-ID: EMAIL-009
+From: ops@ghi-logistics.example
+To: booking@ugr.example
+Date: 2026-10-04 15:42
+Subject: 2 buses PIRAEUS-JEDDAH / 27.11.26
+------------------------------------------------------------------------
+GHI Global Logistics booking request
+
+POL: PIRAEUS
+POD: JEDDAH
+Sailing requested: 27/11/26
+
+2 x COACH BUS
+Weight each: 12.500,50 KG
+Dims each: 12,10 x 2,55 x 3,80 m
+
+VIN:
+ANONVIN0000000024
+ANONVIN0000000025
+
+Rate: USD 4,50 w/m
+Please proceed.
